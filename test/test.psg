@@ -1,0 +1,5 @@
+(def x 25)
+
+(def square (fn (x) (* x x)))
+
+(square 25)
