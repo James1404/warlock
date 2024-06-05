@@ -2,7 +2,7 @@
 
 #include "meridian_common.h"
 #include "meridian_error.h"
-#include "meridian_parser.h"
+#include "meridian_reader.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,11 +11,11 @@ void Meridian_run(const char* src) {
     printf("--- INPUT ---\n");
     printf("%s\n", src);
 
-    Parser p = Parser_make(String_make(src));
+    Reader reader = Reader_make(String_make(src));
 
-    Parser_run(&p);
+    Reader_run(&reader);
 
-    Parser_free(&p);
+    Reader_free(&reader);
 }
 
 void Meridian_run_file(const char* path) {

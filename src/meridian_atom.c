@@ -12,28 +12,3 @@ String Atom_toString(Atom* atom) {
 }
 
 FOR_PRIMITIVES(DEFINE_ATOM_MAKE_IMPL);
-
-void ListNode_free(ListNode* node) {
-    if(node->next) {
-        ListNode_free(node->next);
-        free(node->next);
-        node->next = NULL;
-    }
-}
-
-void ListNode_push(ListNode* node, Atom atom) {
-    ListNode* last = ListNode_last(node);
-
-    ListNode* new = malloc(sizeof(ListNode));
-    last->next = new;
-
-    new->atom = atom;
-}
-
-ListNode* ListNode_last(ListNode* node) {
-    while(node->next) {
-        node = node->next;
-    }
-
-    return node;
-}

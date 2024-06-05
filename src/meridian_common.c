@@ -21,12 +21,11 @@ byte String_index(String str, i32 pos) {
 }
 
 String String_substr(String other, i32 pos, i32 length) {
-    if(length == other.length) return other;
     String r = {};
 
     r.data = malloc(length + 1);
     memcpy(r.data, other.data + pos, sizeof(byte) * length);
-    r.data[length + 1] = '\0';
+    r.data[length] = '\0';
     r.length = length;
     return r;
 }
