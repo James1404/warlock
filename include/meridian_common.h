@@ -1,19 +1,20 @@
-#ifndef MERIDIAN_TYPES_H
-#define MERIDIAN_TYPES_H
+#ifndef MERIDIAN_COMMON_H
+#define MERIDIAN_COMMON_H
 
 #include <stdbool.h>
 #include <string.h>
 #include <limits.h>
+#include <stdint.h>
 
-typedef unsigned char       u8;
-typedef unsigned short      u16;
-typedef unsigned long       u32;
-typedef unsigned long long  u64;
+typedef uint8_t  u8;
+typedef uint16_t u16;
+typedef uint32_t u32;
+typedef uint64_t u64;
 
-typedef char        i8;
-typedef short       i16;
-typedef long        i32;
-typedef long long   i64;
+typedef int8_t  i8;
+typedef int16_t i16;
+typedef int32_t i32;
+typedef int64_t i64;
 
 typedef char            byte;
 typedef unsigned char   ubyte;
@@ -48,7 +49,13 @@ void String_free(String* str);
 byte String_index(String str, i32 pos);
 String String_substr(String other, i32 pos, i32 length);
 
+String String_concat_with_raw(String lhs, const char* rhs);
+String String_concat(String lhs, String rhs);
+
 const byte* String_get_raw(String str);
+
+bool String_is(String str, const char* cmp);
+bool String_cmp(String str, String other);
 
 //
 // --- Dynamic Array ---
@@ -68,4 +75,23 @@ void DynamicArray_push(DynamicArray* array, void* elem);
 
 #define DynamicArray_at(T, array, i) (T*)((array).data + i)
 
-#endif//MERIDIAN_TYPES_H
+//
+// --- Page Allocator ---
+//
+
+typedef struct {
+    u64 allocated, used;
+    u8* data;
+} Region;
+
+typedef struct {
+    u64 size, length;
+    Region* regions;
+} ArenaAllocator;
+
+ArenaAllocator ArenaAllocator_make(u64 region_size);
+void ArenaAllocator_free(ArenaAllocator* allocator);
+
+void* ArenaAllocator_alloc(ArenaAllocator* allocator, u64 size);
+
+#endif//MERIDIAN_COMMON_H

@@ -2,6 +2,8 @@
 
 #include "meridian_common.h"
 #include "meridian_error.h"
+#include "meridian_eval.h"
+#include "meridian_printer.h"
 #include "meridian_reader.h"
 
 #include <stdio.h>
@@ -15,6 +17,12 @@ void Meridian_run(const char* src) {
 
     Reader_run(&reader);
 
+    Eval eval = Eval_make();
+
+    printf("--- Output ---\n");
+    Printer_run(Eval_Atom(&eval, reader.global));
+
+    Eval_free(&eval);
     Reader_free(&reader);
 }
 

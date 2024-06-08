@@ -61,7 +61,7 @@ typedef struct {
 HashSet HashSet_make();
 void HashSet_free(HashSet* hashset);
 
-void HashSet_add(HashSet* hashset, String key, Atom value);
+void HashSet_add(HashSet* hashset, String key);
 bool HashSet_has(HashSet* hashset, String key);
 
 #endif//MERIDIAN_HASH_H

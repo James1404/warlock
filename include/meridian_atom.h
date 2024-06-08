@@ -6,52 +6,64 @@
 typedef struct Atom Atom;
 
 typedef struct {
-    Atom *left, *right;
-} Cons;
+    u64 length, allocated;
+    Atom* data;
+} List;
+
+List List_make();
+void List_free(List* list);
+
+void List_push(List* list, Atom atom);
+Atom List_at(List* list, u64 index);
 
 typedef struct {
-    String name;
-} Symbol;
+    u64 args_length, args_allocated;
+    String* args;
 
-typedef struct {
-    Cons args;
-    struct Atom* body;
+    Atom* body;
 } Fn;
 
-#define FOR_PRIMITIVES(DO)\
-    DO(f64) DO(bool) DO(String)\
-    DO(Cons) DO(Symbol)\
-    DO(Fn)
+Fn Fn_make();
+void Fn_free(Fn* fn);
+void Fn_push(Fn* fn, String arg);
 
-#define ATOM_GET_VALUE(x) ATOM_VALUE_##x
-#define ATOM_GET_TYPE(x) ATOM_TYPE_##x
-
-#define DEFINE_ATOM_VALUE(x) x ATOM_GET_VALUE(x);
-#define DEFINE_ATOM_TYPE(x) ATOM_GET_TYPE(x),
+typedef enum {
+    ATOM_NUMBER,
+    ATOM_BOOLEAN,
+    ATOM_STRING,
+    ATOM_SYMBOL,
+    ATOM_KEYWORD,
+    ATOM_FN,
+    ATOM_LIST,
+    ATOM_NIL,
+} AtomType;
 
 struct Atom {
-    union { FOR_PRIMITIVES(DEFINE_ATOM_VALUE) } value;
-    enum { FOR_PRIMITIVES(DEFINE_ATOM_TYPE) } type;
+    AtomType ty;
+    union {
+        f64 number;
+        bool boolean;
+        String string;
+        Fn fn;
+        List list;
+    } as;
 };
 
-typedef struct ListNode {
-    struct ListNode* next;
-    Atom atom;
-} ListNode;
+#define ATOM_NUMBER(value) ((Atom) { .ty = ATOM_NUMBER, .as.number = value  })
+#define ATOM_BOOL(value) ((Atom) { .ty = ATOM_BOOLEAN, .as.number = value  })
+#define ATOM_STRING(value) ((Atom) { .ty = ATOM_STRING, .as.string = value  })
+#define ATOM_SYMBOL(value) ((Atom) { .ty = ATOM_SYMBOL, .as.string = value  })
+#define ATOM_KEYWORD(value) ((Atom) { .ty = ATOM_KEYWORD, .as.string = value  })
+#define ATOM_FN() ((Atom) { .ty = ATOM_FN, .as.fn = Fn_make() })
+#define ATOM_LIST() ((Atom) { .ty = ATOM_LIST, .as.list = List_make()  })
+#define ATOM_NIL() ((Atom) { .ty = ATOM_NIL })
 
-String Atom_toString(Atom* atom);
-
-#define DEFINE_ATOM_MAKE(x)\
-    Atom Atom_make_##x(x value);
-
-#define DEFINE_ATOM_MAKE_IMPL(x)\
-    Atom Atom_make_##x(x value) {\
-        return (Atom) {\
-            .type = ATOM_GET_TYPE(x),\
-            .value.ATOM_GET_VALUE(x) = value\
-        };\
-    }
-
-FOR_PRIMITIVES(DEFINE_ATOM_MAKE)
+#define GET_ATOM_NUMBER(atom) ((atom).as.number)
+#define GET_ATOM_BOOL(atom) ((atom).as.boolean)
+#define GET_ATOM_STRING(atom) ((atom).as.string)
+#define GET_ATOM_SYMBOL(atom) ((atom).as.string)
+#define GET_ATOM_KEYWORD(atom) ((atom).as.string)
+#define GET_ATOM_FN(atom) ((atom).as.fn)
+#define GET_ATOM_LIST(atom) ((atom).as.list)
 
 #endif//MERIDIAN_ATOM_H

@@ -145,7 +145,7 @@ void HashSet_free(HashSet* hashset) {
     *hashset = HashSet_make();
 }
 
-void HashSet_add(HashSet* hashset, String key, Atom value) {
+void HashSet_add(HashSet* hashset, String key) {
     if(!hashset->buckets) {
         HashSet_realloc(hashset);
     }
