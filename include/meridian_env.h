@@ -6,7 +6,7 @@
 typedef struct {
     u64 scope;
     String name;
-    Atom value;
+    Atom atom;
 } Local;
 
 typedef struct {
@@ -16,13 +16,13 @@ typedef struct {
     Local* locals;
 } Env;
 
-Env Env_make();
-void Env_free(Env* env);
+void Env_init();
+void Env_free();
 
-void Env_inc(Env* env);
-void Env_dec(Env* env);
+void Env_inc();
+void Env_dec();
 
-Atom Env_get(Env* env, String name);
-void Env_set(Env* env, String name, Atom atom);
+Atom Env_get(String name);
+void Env_set(String name, Atom atom);
 
 #endif//MERIDIAN_ENV_H

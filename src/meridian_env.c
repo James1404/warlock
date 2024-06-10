@@ -3,8 +3,10 @@
 
 #include <stdlib.h>
 
-Env Env_make() {
-    return (Env) {
+static Env env;
+
+void Env_init() {
+    env = (Env) {
         .scope = 0,
 
         .length = 0,
@@ -13,51 +15,54 @@ Env Env_make() {
     };
 }
 
-void Env_free(Env* env) {
-    if(env->locals) free(env->locals);
-    *env = Env_make();
+void Env_free() {
+    if(env.locals) free(env.locals);
+    Env_init();
 }
 
-void Env_inc(Env* env) {
-    env->scope++;
+void Env_inc() {
+    env.scope++;
 }
 
-void Env_dec(Env* env) {
-    env->scope--;
+void Env_dec() {
+    env.scope--;
 
-    while(env->locals[env->length - 1].scope > env->scope) {
-        env->length--;
+    while(env.locals[env.length - 1].scope > env.scope) {
+        env.length--;
     }
 }
 
-Atom Env_get(Env* env, String name) {
-    u64 i = env->length;
-    while(!String_cmp(env->locals[i].name, name)) {
-        if(i < 0) {
-            Meridian_error("Could not find symbol in current environment");
-            return ATOM_NIL();
+Atom Env_get(String name) {
+    for(u64 i = env.length - 1; i > 0; i--) {
+        if(String_cmp(env.locals[i].name, name))
+            return env.locals[i].atom;
+    }
+
+    Meridian_error("Could not find symbol in current environment");
+    return ATOM_NIL();
+}
+
+void Env_set(String name, Atom atom) {
+    if(!env.locals) {
+        env.allocated = 8;
+        env.locals = malloc(sizeof(Atom) * env.allocated);
+    }
+
+    if(env.length >= env.allocated) {
+        env.allocated *= 2;
+
+        Local* temp = realloc(env.locals, sizeof(Atom)*env.allocated);
+        if(temp) {
+            env.locals = temp;
+        }
+        else {
+            Meridian_error("Env_set, realloc error");
         }
     }
 
-    return env->locals[i].value;
-}
-
-void Env_set(Env* env, String name, Atom atom) {
-    if(!env->locals) {
-        env->allocated = 8;
-        env->locals = malloc(sizeof(Atom) * env->allocated);
-    }
-
-    env->locals[env->length] = (Local) {
-        .scope = env->scope,
+    env.locals[env.length++] = (Local) {
+        .scope = env.scope,
         .name = name,
-        .value = atom,
+        .atom = atom,
     };
-
-    env->length++;
-
-    if(env->length >= env->allocated) {
-        env->allocated *= 2;
-        env->locals = realloc(env->locals, sizeof(Atom)*env->allocated);
-    }
 }

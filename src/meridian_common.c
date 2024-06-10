@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 String String_make(const byte* raw) {
-    String r = {};
+    String r;
 
     r.length = strlen(raw);
     r.data = malloc(r.length + 1);
@@ -14,14 +14,12 @@ String String_make(const byte* raw) {
     return r;
 }
 
-void String_free(String* str) { /* Might not implement */ }
-
 byte String_index(String str, i32 pos) {
     return str.data[pos];
 }
 
 String String_substr(String other, i32 pos, i32 length) {
-    String r = {};
+    String r;
 
     r.data = malloc(length + 1);
     memcpy(r.data, other.data + pos, sizeof(byte) * length);
@@ -34,7 +32,7 @@ String String_concat_with_raw(String lhs, const char* rhs) {
     u64 rhs_len = strlen(rhs);
     u64 size = lhs.length + rhs_len;
 
-    String r = {};
+    String r;
 
     r.data = malloc(size + 1);
     r.length = size;
@@ -48,7 +46,7 @@ String String_concat_with_raw(String lhs, const char* rhs) {
 String String_concat(String lhs, String rhs) {
     u64 size = lhs.length + rhs.length;
 
-    String r = {};
+    String r;
 
     r.data = malloc(size + 1);
     r.length = size;

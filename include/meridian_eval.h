@@ -2,25 +2,15 @@
 #define MERIDIAN_EVAL_H
 
 #include "meridian_atom.h"
-#include "meridian_env.h"
-#include "meridian_intrinsics.h"
 
-typedef struct {
-    Env env;
-    IntrinsicMap intrinsics;
-} Eval;
+void Eval_run(Atom atom);
 
-Eval Eval_make();
-void Eval_free(Eval* eval);
+bool Eval_match(Atom atom, const char* expected);
 
-void Eval_run(Eval* eval, Atom atom);
+Atom Eval_Atom(Atom atom);
+Atom Eval_List(Atom atom);
 
-bool Eval_match(Eval* eval, Atom atom, const char* expected);
-
-Atom Eval_Atom(Eval* eval, Atom atom);
-Atom Eval_List(Eval* eval, Atom atom);
-
-Atom Eval_Def(Eval* eval, Atom atom);
-Atom Eval_Fn(Eval* eval, Atom atom);
+Atom Eval_Def(Atom atom);
+Atom Eval_Fn(Atom atom);
 
 #endif//MERIDIAN_EVAL_H

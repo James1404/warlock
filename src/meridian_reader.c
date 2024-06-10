@@ -8,14 +8,6 @@ static bool Reader_eof(Reader* reader) {
     return reader->position >= reader->src.length;
 }
 
-static char Reader_peek(Reader* reader) {
-    if(Reader_eof(reader)) {
-        return '\0';
-    }
-
-    return String_index(reader->src, reader->position + 1);
-}
-
 static char Reader_current(Reader* reader) {
     return String_index(reader->src, reader->position);
 }

@@ -14,9 +14,13 @@ String AtomType_toString(Atom atom) {
         case ATOM_SYMBOL: return String_make("SYMBOL");
         case ATOM_KEYWORD: return String_make("KEYWORD");
         case ATOM_FN: return String_make("FN");
+        case ATOM_INTRINSIC: return String_make("INTRINSIC");
+        case ATOM_FFI: return String_make("FFI");
         case ATOM_LIST: return String_make("LIST");
         case ATOM_NIL: return String_make("NIL");
     }
+
+    return String_make("Invalid String");
 }
 
 List List_make() {

@@ -8,11 +8,11 @@ void Printer_Atom(Atom atom) {
             printf("%Lf", GET_ATOM_NUMBER(atom));
         } break;
         case ATOM_BOOLEAN: {
-            bool v = GET_ATOM_BOOL(atom);
+            bool v = GET_ATOM_BOOLEAN(atom);
             if(v)
-                printf("true");
+                printf("#t");
             else
-                printf("false");
+                printf("#f");
         } break;
         case ATOM_STRING: {
             String str = GET_ATOM_STRING(atom);
@@ -53,6 +53,14 @@ void Printer_Atom(Atom atom) {
             Printer_Atom(*func.body);
             printf(")");
 
+            break;
+        } break;
+        case ATOM_INTRINSIC: {
+            printf("#intrinsic");
+            break;
+        } break;
+        case ATOM_FFI: {
+            printf("ffi");
             break;
         } break;
         case ATOM_NIL: {

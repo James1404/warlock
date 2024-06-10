@@ -44,7 +44,6 @@ typedef struct {
 } String;
 
 String String_make(const byte* raw);
-void String_free(String* str);
 
 byte String_index(String str, i32 pos);
 String String_substr(String other, i32 pos, i32 length);

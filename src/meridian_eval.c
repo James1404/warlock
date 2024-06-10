@@ -1,61 +1,65 @@
 #include "meridian_eval.h"
 #include "meridian_error.h"
+#include "meridian_env.h"
 
 #include <stdlib.h>
 
-Eval Eval_make() {
-    Eval eval = {
-        .env = Env_make(),
-        .intrinsics = IntrinsicMap_make()
-    };
-
-    return eval;
+void Eval_run(Atom atom) {
+    Eval_Atom(atom);
 }
 
-void Eval_free(Eval* eval) {
-    Env_free(&eval->env);
-}
-
-void Eval_run(Eval* eval, Atom atom) {
-    Eval_Atom(eval, atom);
-}
-
-Atom Eval_Atom(Eval* eval, Atom atom) {
+Atom Eval_Atom(Atom atom) {
     switch(atom.ty) {
         case ATOM_SYMBOL: {
-            return Env_get(&eval->env, GET_ATOM_SYMBOL(atom));
+            return Env_get(GET_ATOM_SYMBOL(atom));
         } break;
-        case ATOM_LIST: return Eval_List(eval, atom);
-        case ATOM_FN: return Eval_Fn(eval, atom);
+        case ATOM_LIST: return Eval_List(atom);
 
         case ATOM_NUMBER:
         case ATOM_BOOLEAN:
         case ATOM_STRING:
         case ATOM_NIL:
         case ATOM_KEYWORD:
+        case ATOM_FN:
+        case ATOM_INTRINSIC:
+        case ATOM_FFI:
             return atom;
     }
 
     return ATOM_NIL();
 }
 
-Atom Eval_List(Eval* eval, Atom atom) {
+Atom Eval_List(Atom atom) {
     Atom predicate = List_at(&GET_ATOM_LIST(atom), 0);
 
     if(predicate.ty == ATOM_SYMBOL) {
         if(String_is(GET_ATOM_SYMBOL(predicate), "fn")) {
-            return Eval_Fn(eval, atom);
+            return Eval_Fn(atom);
         }
     }
 
     for(u64 i = 0; i < GET_ATOM_LIST(atom).length; i++) {
-        GET_ATOM_LIST(atom).data[i] = Eval_Atom(eval, GET_ATOM_LIST(atom).data[i]);
+        GET_ATOM_LIST(atom).data[i] = Eval_Atom(GET_ATOM_LIST(atom).data[i]);
     }
 
-    return predicate;
+    Atom fn = GET_ATOM_LIST(atom).data[0];
+    if(fn.ty == ATOM_INTRINSIC) {
+        List list = List_make();
+
+        for(u64 i = 1; i < GET_ATOM_LIST(atom).length; i++) {
+            List_push(&list, GET_ATOM_LIST(atom).data[i]);
+        }
+
+        return GET_ATOM_INTRINSIC(fn)(list);
+    }
+
+    if(GET_ATOM_LIST(atom).length == 1)
+        return GET_ATOM_LIST(atom).data[0];
+
+    return atom;
 }
 
-bool Eval_match(Eval* eval, Atom atom, const char* expected) {
+bool Eval_match(Atom atom, const char* expected) {
     if(atom.ty == ATOM_SYMBOL) {
         String sym = GET_ATOM_SYMBOL(atom);
         return String_is(sym, expected);
@@ -64,7 +68,7 @@ bool Eval_match(Eval* eval, Atom atom, const char* expected) {
     return false;
 }
 
-Atom Eval_Def(Eval* eval, Atom atom) {
+Atom Eval_Def(Atom atom) {
     if(atom.ty != ATOM_LIST) return ATOM_NIL();
 
     List list = GET_ATOM_LIST(atom);
@@ -74,18 +78,18 @@ Atom Eval_Def(Eval* eval, Atom atom) {
         return ATOM_NIL();
     }
 
-    if(Eval_match(eval, list.data[0], "def")) {
+    if(Eval_match(list.data[0], "def")) {
         if(list.data[1].ty == ATOM_SYMBOL) {
-            Env_set(&eval->env, GET_ATOM_SYMBOL(list.data[1]), list.data[2]);
+            Env_set(GET_ATOM_SYMBOL(list.data[1]), list.data[2]);
         }
     }
     
     return ATOM_NIL();
 }
 
-Atom Eval_Fn(Eval* eval, Atom atom) {
+Atom Eval_Fn(Atom atom) {
     if(atom.ty != ATOM_LIST) return ATOM_NIL();
-    if(!Eval_match(eval, GET_ATOM_LIST(atom).data[0], "fn")) return ATOM_NIL();
+    if(!Eval_match(GET_ATOM_LIST(atom).data[0], "fn")) return ATOM_NIL();
 
     Atom args = GET_ATOM_LIST(atom).data[1];
     Atom body = GET_ATOM_LIST(atom).data[2];
