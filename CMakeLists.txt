@@ -10,6 +10,9 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
+#add_compile_options(-fsanitize=address)
+#add_link_options(-fsanitize=address)
+
 add_library(meridian)
 add_executable(meridian_exe)
 set_property(TARGET meridian_exe PROPERTY OUTPUT_NAME meridian)

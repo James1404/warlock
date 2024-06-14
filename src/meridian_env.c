@@ -2,6 +2,7 @@
 #include "meridian_error.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 static Env env;
 
@@ -33,9 +34,14 @@ void Env_dec() {
 }
 
 Atom Env_get(String name) {
-    for(u64 i = env.length - 1; i > 0; i--) {
-        if(String_cmp(env.locals[i].name, name))
-            return env.locals[i].atom;
+    for(i64 i = env.length - 1; i >= 0; i--) {
+        Local entry = env.locals[i];
+
+        printf("Env_get [%lu] :: %s\n", i, String_get_raw(entry.name));
+
+        if(String_cmp(entry.name, name)) {
+            return entry.atom;
+        }
     }
 
     Meridian_error("Could not find symbol in current environment");
@@ -44,6 +50,7 @@ Atom Env_get(String name) {
 
 void Env_set(String name, Atom atom) {
     if(!env.locals) {
+        env.length = 0;
         env.allocated = 8;
         env.locals = malloc(sizeof(Atom) * env.allocated);
     }
@@ -51,18 +58,21 @@ void Env_set(String name, Atom atom) {
     if(env.length >= env.allocated) {
         env.allocated *= 2;
 
-        Local* temp = realloc(env.locals, sizeof(Atom)*env.allocated);
+        Local* temp = realloc(env.locals, sizeof(Atom) * env.allocated);
         if(temp) {
             env.locals = temp;
         }
         else {
             Meridian_error("Env_set, realloc error");
+            return;
         }
     }
 
     env.locals[env.length++] = (Local) {
         .scope = env.scope,
-        .name = name,
+        .name = String_copy(name),
         .atom = atom,
     };
+
+    printf("Env_set :: %s\n", env.locals[env.length - 1].name.data);
 }

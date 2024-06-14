@@ -31,6 +31,7 @@ Atom meridian_add(List args) {
 
     return result;
 }
+
 Atom meridian_sub(List args) {
     Atom result = args.data[0];
 
@@ -113,7 +114,6 @@ void Meridian_builtin() {
     GLOBAL("true", ATOM_BOOLEAN(true));
     GLOBAL("false", ATOM_BOOLEAN(false));
     BUILTIN("println", meridian_println);
-
 }
 
 void Meridian_run(const char* src) {
@@ -125,7 +125,9 @@ void Meridian_run(const char* src) {
     Reader_run(&reader);
 
     printf("--- Output ---\n");
-    Eval_Atom(reader.global);
+    Atom final = Eval_Atom(reader.global);
+    Printer_Atom(final);
+    printf("\n");
 
     Reader_free(&reader);
 }

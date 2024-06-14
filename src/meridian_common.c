@@ -3,12 +3,25 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define STR(s) String_make(s)
+
 String String_make(const byte* raw) {
     String r;
 
     r.length = strlen(raw);
     r.data = malloc(r.length + 1);
     memcpy(r.data, raw, r.length);
+    r.data[r.length] = '\0';
+
+    return r;
+}
+
+String String_copy(String other) {
+    String r;
+
+    r.length = other.length;
+    r.data = malloc(r.length + 1);
+    memcpy(r.data, other.data, r.length);
     r.data[r.length] = '\0';
 
     return r;
@@ -71,66 +84,4 @@ bool String_is(String str, const char* cmp) {
 
 bool String_cmp(String str, String other) {
     return strncmp(str.data, other.data, str.length) == 0;
-}
-
-DynamicArray DynamicArray_make(u64 element_size) {
-    return (DynamicArray) {
-        .data = NULL,
-        .length = 0,
-        .capacity = 0,
-        .element_size = element_size
-    };
-}
-void DynamicArray_free(DynamicArray* array) {
-    if(array->data) free(array->data);
-    array->data = NULL;
-}
-
-void DynamicArray_push(DynamicArray* array, void* elem) {
-    if(array->capacity == 0 || !array->data) {
-        array->capacity = 8;
-        array->data = malloc(array->element_size*array->capacity);
-    }
-
-    memcpy(&array->data[array->length], elem, array->element_size);
-    array->length++;
-
-    if(array->length >= array->capacity) {
-        array->capacity *= 2;
-        array->data = realloc(array->data, array->element_size*array->capacity);
-    }
-}
-
-ArenaAllocator ArenaAllocator_make(u64 region_size) {
-    return (ArenaAllocator) {
-        .size = region_size,
-        .length = 0,
-        .regions = NULL
-    };
-}
-
-void ArenaAllocator_free(ArenaAllocator* allocator) {
-    for(u32 i = 0; i < allocator->length; i++) {
-        Region region = allocator->regions[i];
-        free(region.data);
-    }
-
-    if(allocator->regions) free(allocator->regions);
-}
-
-void* ArenaAllocator_alloc(ArenaAllocator* allocator, u64 size) {
-    if(size > allocator->size) return NULL;
-
-    u64 idx = allocator->length % allocator->size;
-    u64 region = allocator->length / allocator->size;
-
-    allocator->length++;
-
-    if(!allocator->regions || idx > allocator->length) {
-        allocator->length++;
-        allocator->regions = malloc(allocator->size * allocator->length);
-    }
-
-    allocator->regions[region].used++;
-    return &allocator->regions[region].data[idx];
 }

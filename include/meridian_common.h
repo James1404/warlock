@@ -44,6 +44,7 @@ typedef struct {
 } String;
 
 String String_make(const byte* raw);
+String String_copy(String other);
 
 byte String_index(String str, i32 pos);
 String String_substr(String other, i32 pos, i32 length);
@@ -55,42 +56,5 @@ const byte* String_get_raw(String str);
 
 bool String_is(String str, const char* cmp);
 bool String_cmp(String str, String other);
-
-//
-// --- Dynamic Array ---
-//
-
-typedef struct {
-    byte* data;
-    u64 element_size;
-
-    u64 capacity, length;
-} DynamicArray;
-
-DynamicArray DynamicArray_make(u64 element_size);
-void DynamicArray_free(DynamicArray* array);
-
-void DynamicArray_push(DynamicArray* array, void* elem);
-
-#define DynamicArray_at(T, array, i) (T*)((array).data + i)
-
-//
-// --- Page Allocator ---
-//
-
-typedef struct {
-    u64 allocated, used;
-    u8* data;
-} Region;
-
-typedef struct {
-    u64 size, length;
-    Region* regions;
-} ArenaAllocator;
-
-ArenaAllocator ArenaAllocator_make(u64 region_size);
-void ArenaAllocator_free(ArenaAllocator* allocator);
-
-void* ArenaAllocator_alloc(ArenaAllocator* allocator, u64 size);
 
 #endif//MERIDIAN_COMMON_H
