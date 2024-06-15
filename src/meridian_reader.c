@@ -3,6 +3,7 @@
 #include "meridian_error.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 static bool Reader_eof(Reader* reader) {
     return reader->position >= reader->src.length;
@@ -154,7 +155,7 @@ static Atom Reader_ReadAtom(Reader* reader) {
         return Reader_ReadSymbol(reader);
     }
 
-    Meridian_error("Invalid atom");
+    printf("ERROR INVALID ATOM :: '%02x'\n", (unsigned char) c);
     return ATOM_NIL();
 }
 

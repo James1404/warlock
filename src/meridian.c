@@ -1,5 +1,6 @@
 #include "meridian.h"
 
+#include "meridian_allocator.h"
 #include "meridian_common.h"
 #include "meridian_env.h"
 #include "meridian_error.h"
@@ -11,11 +12,13 @@
 #include <stdlib.h>
 
 void Meridian_init() {
+    MainAllocator_init();
     Env_init();
 }
 
 void Meridian_free() {
     Env_free();
+    MainAllocator_free();
 }
 
 #define BUILTIN(name, fn) Env_set(String_make(name), ATOM_INTRINSIC(&fn))
@@ -91,6 +94,19 @@ Atom meridian_tail(List args) {
     return GET_ATOM_LIST(arg).data[GET_ATOM_LIST(arg).length - 1];
 }
 
+Atom meridian_concat(List args) {
+    if(args.length != 1) {
+        Meridian_error("expected one arg");
+        return ATOM_NIL();
+    }
+
+    Atom arg = args.data[0];
+
+    if(arg.ty != ATOM_LIST) return arg;
+
+    return GET_ATOM_LIST(arg).data[GET_ATOM_LIST(arg).length - 1];
+}
+
 Atom meridian_println(List args) {
     if(args.length == 0) {
         Meridian_error("expected one arg");
@@ -111,23 +127,38 @@ void Meridian_builtin() {
     BUILTIN("-", meridian_sub);
     BUILTIN("*", meridian_mul);
     BUILTIN("/", meridian_div);
+
     GLOBAL("true", ATOM_BOOLEAN(true));
-    GLOBAL("false", ATOM_BOOLEAN(false));
+    GLOBAL("false", ATOM_NUMBER(false));
+
     BUILTIN("println", meridian_println);
+
+    //BUILTIN("head", meridian_head);
+    //BUILTIN("tail", meridian_tail);
 }
 
+#define DEBUG_PRINT
+#undef DEBUG_PRINT
+
 void Meridian_run(const char* src) {
+#ifdef DEBUG_PRINT
     printf("--- INPUT ---\n");
     printf("%s\n", src);
+#endif//DEBUG_PRINT
 
     Reader reader = Reader_make(String_make(src));
 
     Reader_run(&reader);
 
-    printf("--- Output ---\n");
     Atom final = Eval_Atom(reader.global);
+#ifdef DEBUG_PRINT
+    printf("--- Output ---\n");
+
     Printer_Atom(final);
     printf("\n");
+#else
+    (void)final;
+#endif//DEBUG_PRINT
 
     Reader_free(&reader);
 }
@@ -144,12 +175,10 @@ void Meridian_run_file(const char* path) {
     u64 length = ftell(file);
 
     fseek(file, 0, SEEK_SET);
-    char* buffer = malloc(length);
+    char* buffer = MainAllocator_malloc(length);
 
     fread(buffer, 1, length, file);
     fclose(file);
 
     Meridian_run(buffer);
-
-    free(buffer);
 }

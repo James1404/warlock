@@ -1,1 +1,6 @@
-(+ 25 (* 5 2))
+(def square (fn (x) (* x x)))
+(def double_square (fn (x) (+ (square x) (square x))))
+
+(println (double_square 25))
+
+(println (/ 1 2))

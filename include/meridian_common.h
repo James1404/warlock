@@ -34,27 +34,4 @@ typedef size_t usize;
 #define I32_MAX LONG_MAX
 #define I64_MAX LLONG_MAX
 
-//
-// --- String ---
-//
-
-typedef struct {
-    byte* data;
-    i32 length;
-} String;
-
-String String_make(const byte* raw);
-String String_copy(String other);
-
-byte String_index(String str, i32 pos);
-String String_substr(String other, i32 pos, i32 length);
-
-String String_concat_with_raw(String lhs, const char* rhs);
-String String_concat(String lhs, String rhs);
-
-const byte* String_get_raw(String str);
-
-bool String_is(String str, const char* cmp);
-bool String_cmp(String str, String other);
-
 #endif//MERIDIAN_COMMON_H

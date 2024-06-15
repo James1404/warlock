@@ -37,8 +37,6 @@ Atom Env_get(String name) {
     for(i64 i = env.length - 1; i >= 0; i--) {
         Local entry = env.locals[i];
 
-        printf("Env_get [%lu] :: %s\n", i, String_get_raw(entry.name));
-
         if(String_cmp(entry.name, name)) {
             return entry.atom;
         }
@@ -52,13 +50,13 @@ void Env_set(String name, Atom atom) {
     if(!env.locals) {
         env.length = 0;
         env.allocated = 8;
-        env.locals = malloc(sizeof(Atom) * env.allocated);
+        env.locals = malloc(sizeof(Local) * env.allocated);
     }
 
     if(env.length >= env.allocated) {
         env.allocated *= 2;
 
-        Local* temp = realloc(env.locals, sizeof(Atom) * env.allocated);
+        Local* temp = realloc(env.locals, sizeof(Local) * env.allocated);
         if(temp) {
             env.locals = temp;
         }
@@ -73,6 +71,4 @@ void Env_set(String name, Atom atom) {
         .name = String_copy(name),
         .atom = atom,
     };
-
-    printf("Env_set :: %s\n", env.locals[env.length - 1].name.data);
 }

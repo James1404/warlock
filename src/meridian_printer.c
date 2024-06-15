@@ -9,14 +9,11 @@ void Printer_Atom(Atom atom) {
         } break;
         case ATOM_BOOLEAN: {
             bool v = GET_ATOM_BOOLEAN(atom);
-            if(v)
-                printf("#t");
-            else
-                printf("#f");
+            printf(v ? "#t" : "#f");
         } break;
         case ATOM_STRING: {
             String str = GET_ATOM_STRING(atom);
-            printf("\"%.*s\"", str.length, str.data);
+            printf("%.*s", str.length, str.data);
         } break;
         case ATOM_SYMBOL: {
             String sym = GET_ATOM_SYMBOL(atom);

@@ -11,7 +11,7 @@ void Eval_run(Atom atom) {
 Atom Eval_Atom(Atom atom) {
     switch(atom.ty) {
         case ATOM_SYMBOL: {
-            return Env_get(GET_ATOM_SYMBOL(atom));
+            return Eval_Atom(Env_get(GET_ATOM_SYMBOL(atom)));
         } break;
         case ATOM_LIST: return Eval_List(atom);
 
@@ -33,6 +33,10 @@ Atom Eval_List(Atom atom) {
     Atom predicate = List_at(&GET_ATOM_LIST(atom), 0);
 
     if(predicate.ty == ATOM_SYMBOL) {
+        if(String_is(GET_ATOM_SYMBOL(predicate), "def")) {
+            return Eval_Def(atom);
+        }
+
         if(String_is(GET_ATOM_SYMBOL(predicate), "fn")) {
             return Eval_Fn(atom);
         }
@@ -51,6 +55,34 @@ Atom Eval_List(Atom atom) {
         }
 
         return GET_ATOM_INTRINSIC(fn)(list);
+    }
+
+    if(fn.ty == ATOM_FN) {
+        List list = List_make();
+
+        for(u64 i = 1; i < GET_ATOM_LIST(atom).length; i++) {
+            List_push(&list, GET_ATOM_LIST(atom).data[i]);
+        }
+
+        Env_inc();
+
+        Atom result = ATOM_NIL();
+
+        if(list.length != GET_ATOM_FN(fn).args_length) {
+            Meridian_error("Invalid amount of arguments");
+            return ATOM_NIL();
+        }
+
+        for(u64 i = 0; i < list.length; i++) {
+            String name = GET_ATOM_FN(fn).args[i];
+            Env_set(name, list.data[i]);
+        }
+
+        result = Eval_Atom(*GET_ATOM_FN(fn).body);
+
+        Env_dec();
+
+        return result;
     }
 
     if(GET_ATOM_LIST(atom).length == 1)
