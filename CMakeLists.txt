@@ -39,3 +39,9 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E create_symlink
             ${meridian_CURRENT_DIR}/test
             ${CMAKE_CURRENT_BINARY_DIR}/test)
+
+add_custom_command(
+    TARGET meridian POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E create_symlink
+            ${meridian_CURRENT_DIR}/lib
+            ${CMAKE_CURRENT_BINARY_DIR}/lib)

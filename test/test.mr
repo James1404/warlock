@@ -1,15 +1,15 @@
+(import "lib/std/comparison.mr")
+
 (def square (fn (x) (* x x)))
 (def double_square (fn (x) (+ (square x) (square x))))
 
 (println (double_square 25))
-
-(def != (fn (x y) (! (= x y))))
-
-(def >= (fn (x y) (or (> x y) (= x y))))
-(def <= (fn (x y) (or (< x y) (= x y))))
 
 (println (/ 1 2))
 (println (!= 5 1))
 
 (println "Greater than: " (>= 4 5))
 (println "Less than: " (<= 6 5))
+
+(def name "james Barnfather")
+(print_parens name)

@@ -229,7 +229,7 @@ Atom meridian_concat(List args) {
 
 Atom meridian_println(List args) {
     if(args.length == 0) {
-        Meridian_error("expected one arg");
+        Meridian_error("expected multiple arguments");
         return ATOM_NIL();
     }
 
@@ -238,6 +238,21 @@ Atom meridian_println(List args) {
     }
 
     printf("\n");
+
+    return ATOM_NIL();
+}
+
+Atom meridian_import(List args) {
+    if(args.length != 1) {
+        Meridian_error("expected one arg");
+        return ATOM_NIL();
+    }
+
+    Atom arg = args.data[0];
+
+    if(arg.ty != ATOM_STRING) return arg;
+
+    Meridian_run_file(GET_ATOM_STRING(arg).data);
 
     return ATOM_NIL();
 }
@@ -263,6 +278,8 @@ void Meridian_builtin() {
     GLOBAL("nil", ATOM_NIL());
 
     BUILTIN("println", meridian_println);
+
+    BUILTIN("import", meridian_import);
 
     BUILTIN("head", meridian_head);
     BUILTIN("tail", meridian_tail);
