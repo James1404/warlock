@@ -119,6 +119,25 @@ Atom Eval_Def(Atom atom) {
     return ATOM_NIL();
 }
 
+Atom Eval_If(Atom atom) {
+    if(atom.ty != ATOM_LIST) return ATOM_NIL();
+
+    List list = GET_ATOM_LIST(atom);
+
+    if(list.length != 4) {
+        Meridian_error("invalid if statement");
+        return ATOM_NIL();
+    }
+
+    if(Eval_match(list.data[0], "if")) {
+        if(list.data[1].ty == ATOM_SYMBOL) {
+            Env_set(GET_ATOM_SYMBOL(list.data[1]), list.data[2]);
+        }
+    }
+    
+    return ATOM_NIL();
+}
+
 Atom Eval_Fn(Atom atom) {
     if(atom.ty != ATOM_LIST) return ATOM_NIL();
     if(!Eval_match(GET_ATOM_LIST(atom).data[0], "fn")) return ATOM_NIL();

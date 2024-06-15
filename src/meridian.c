@@ -68,6 +68,126 @@ Atom meridian_div(List args) {
     return result;
 }
 
+Atom meridian_eq(List args) {
+    if(args.length != 2) {
+        Meridian_error("expected two arguments to compare");
+        return ATOM_NIL();
+    }
+
+    Atom lhs = args.data[0];
+    Atom rhs = args.data[1];
+
+    if(lhs.ty != rhs.ty) {
+        Meridian_error("Arguments must be the same type");
+        return ATOM_NIL();
+    }
+
+    switch(lhs.ty) {
+        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) == GET_ATOM_NUMBER(rhs));
+        case ATOM_BOOLEAN: return ATOM_BOOLEAN(GET_ATOM_BOOLEAN(lhs) == GET_ATOM_BOOLEAN(rhs));
+        case ATOM_STRING: return ATOM_BOOLEAN(String_cmp(GET_ATOM_STRING(lhs), GET_ATOM_STRING(rhs)));
+        case ATOM_SYMBOL: return ATOM_BOOLEAN(String_cmp(GET_ATOM_STRING(lhs), GET_ATOM_STRING(rhs)));
+        case ATOM_KEYWORD: return ATOM_BOOLEAN(String_cmp(GET_ATOM_STRING(lhs), GET_ATOM_STRING(rhs)));
+        default: return ATOM_BOOLEAN(false);
+    }
+
+    return ATOM_BOOLEAN(false);
+}
+
+Atom meridian_not(List args) {
+    if(args.length != 1) {
+        Meridian_error("expected one argument");
+        return ATOM_NIL();
+    }
+
+    Atom arg = args.data[0];
+
+    if(arg.ty != ATOM_BOOLEAN) {
+        Meridian_error("Arguments must be a boolean");
+        return ATOM_NIL();
+    }
+
+    return ATOM_BOOLEAN(!GET_ATOM_BOOLEAN(arg));
+}
+
+Atom meridian_greater(List args) {
+    if(args.length != 2) {
+        Meridian_error("expected two arguments to compare");
+        return ATOM_NIL();
+    }
+
+    Atom lhs = args.data[0];
+    Atom rhs = args.data[1];
+
+    if(lhs.ty != rhs.ty) {
+        Meridian_error("Arguments must be the same type");
+        return ATOM_NIL();
+    }
+
+    switch(lhs.ty) {
+        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) > GET_ATOM_NUMBER(rhs));
+        default:
+           Meridian_error("Invalid comparison types"); 
+           return ATOM_NIL();
+    }
+
+    return ATOM_BOOLEAN(false);
+}
+
+Atom meridian_lesser(List args) {
+    if(args.length != 2) {
+        Meridian_error("expected two arguments to compare");
+        return ATOM_NIL();
+    }
+
+    Atom lhs = args.data[0];
+    Atom rhs = args.data[1];
+
+    if(lhs.ty != rhs.ty) {
+        Meridian_error("Arguments must be the same type");
+        return ATOM_NIL();
+    }
+
+    switch(lhs.ty) {
+        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) < GET_ATOM_NUMBER(rhs));
+        default:
+           Meridian_error("Invalid comparison types"); 
+           return ATOM_NIL();
+    }
+
+    return ATOM_BOOLEAN(false);
+}
+
+Atom meridian_and(List args) {
+    if(args.length <= 1) {
+        Meridian_error("expected more than one argument");
+        return ATOM_NIL();
+    }
+
+    for(u64 i = 0; i < args.length; i++) {
+        if(!GET_ATOM_BOOLEAN(args.data[i])) {
+            return ATOM_BOOLEAN(false);
+        }
+    }
+
+    return ATOM_BOOLEAN(true);
+}
+
+Atom meridian_or(List args) {
+    if(args.length <= 1) {
+        Meridian_error("expected more than one argument");
+        return ATOM_NIL();
+    }
+
+    for(u64 i = 0; i < args.length; i++) {
+        if(GET_ATOM_BOOLEAN(args.data[i])) {
+            return ATOM_BOOLEAN(true);
+        }
+    }
+
+    return ATOM_BOOLEAN(false);
+}
+
 Atom meridian_head(List args) {
     if(args.length != 1) {
         Meridian_error("expected one arg");
@@ -128,13 +248,24 @@ void Meridian_builtin() {
     BUILTIN("*", meridian_mul);
     BUILTIN("/", meridian_div);
 
+    BUILTIN("=", meridian_eq);
+    BUILTIN("!", meridian_not);
+
+    BUILTIN(">", meridian_greater);
+    BUILTIN("<", meridian_lesser);
+
+    BUILTIN("and", meridian_and);
+    BUILTIN("or", meridian_or);
+
     GLOBAL("true", ATOM_BOOLEAN(true));
-    GLOBAL("false", ATOM_NUMBER(false));
+    GLOBAL("false", ATOM_BOOLEAN(false));
+
+    GLOBAL("nil", ATOM_NIL());
 
     BUILTIN("println", meridian_println);
 
-    //BUILTIN("head", meridian_head);
-    //BUILTIN("tail", meridian_tail);
+    BUILTIN("head", meridian_head);
+    BUILTIN("tail", meridian_tail);
 }
 
 #define DEBUG_PRINT

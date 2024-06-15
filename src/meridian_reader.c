@@ -48,6 +48,7 @@ static bool isSymbolCharStart(char c) {
         case '>':
         case '<':
         case '!':
+        case '=':
         case '$':
         case '%':
         case '^':

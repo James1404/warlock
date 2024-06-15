@@ -64,7 +64,7 @@ struct Atom {
 // --- Builders ---
 //
 #define ATOM_NUMBER(value) ((Atom) { .ty = ATOM_NUMBER, .as.number = value  })
-#define ATOM_BOOLEAN(value) ((Atom) { .ty = ATOM_BOOLEAN, .as.number = value  })
+#define ATOM_BOOLEAN(value) ((Atom) { .ty = ATOM_BOOLEAN, .as.boolean = value  })
 #define ATOM_STRING(value) ((Atom) { .ty = ATOM_STRING, .as.string = value  })
 #define ATOM_SYMBOL(value) ((Atom) { .ty = ATOM_SYMBOL, .as.string = value  })
 #define ATOM_KEYWORD(value) ((Atom) { .ty = ATOM_KEYWORD, .as.string = value  })
