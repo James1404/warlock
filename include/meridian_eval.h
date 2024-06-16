@@ -12,5 +12,6 @@ Atom Eval_List(Atom atom);
 
 Atom Eval_Def(Atom atom);
 Atom Eval_Fn(Atom atom);
+Atom Eval_If(Atom atom);
 
 #endif//MERIDIAN_EVAL_H

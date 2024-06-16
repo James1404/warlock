@@ -3,6 +3,7 @@
 #include "meridian_env.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 void Eval_run(Atom atom) {
     Eval_Atom(atom);
@@ -35,6 +36,10 @@ Atom Eval_List(Atom atom) {
     if(predicate.ty == ATOM_SYMBOL) {
         if(String_is(GET_ATOM_SYMBOL(predicate), "def")) {
             return Eval_Def(atom);
+        }
+
+        if(String_is(GET_ATOM_SYMBOL(predicate), "if")) {
+            return Eval_If(atom);
         }
 
         if(String_is(GET_ATOM_SYMBOL(predicate), "fn")) {
@@ -129,13 +134,17 @@ Atom Eval_If(Atom atom) {
         return ATOM_NIL();
     }
 
-    if(Eval_match(list.data[0], "if")) {
-        if(list.data[1].ty == ATOM_SYMBOL) {
-            Env_set(GET_ATOM_SYMBOL(list.data[1]), list.data[2]);
-        }
+    if(!Eval_match(list.data[0], "if")) {
+        return ATOM_NIL();
     }
     
-    return ATOM_NIL();
+    Atom condition = Eval_Atom(list.data[1]);
+    if(condition.ty != ATOM_BOOLEAN) {
+        Meridian_error("condition must be a boolean");
+        return ATOM_NIL();
+    }
+
+    return Eval_Atom(GET_ATOM_BOOLEAN(condition) ? list.data[2] : list.data[3]);
 }
 
 Atom Eval_Fn(Atom atom) {

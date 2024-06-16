@@ -1,15 +1,17 @@
 (import "lib/std/comparison.mr")
 
-(def square (fn (x) (* x x)))
-(def double_square (fn (x) (+ (square x) (square x))))
+(def factorial (fn (n)
+    (if (= n 0)
+        1
+        (* n (factorial (- n 1))))))
 
-(println (double_square 25))
+(def dec (fn (x) (- x 1)))
+(def inc (fn (x) (+ x 1)))
 
-(println (/ 1 2))
-(println (!= 5 1))
+(def fib (fn (n)
+    (if (<= n 2)
+        2
+        (+ (fib (dec 1) (fib (- n 2))))
+    )))
 
-(println "Greater than: " (>= 4 5))
-(println "Less than: " (<= 6 5))
-
-(def name "james Barnfather")
-(print_parens name)
+(println (fib 3))
