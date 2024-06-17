@@ -4,21 +4,19 @@
 #include "meridian_string.h"
 
 #define FOR_OPCODES(DO)\
-    DO(ADD)\
-    DO(SUB)\
-    DO(MUL)\
-    DO(DIV)\
+    DO(OP_ADD)\
+    DO(OP_SUB)\
+    DO(OP_MUL)\
+    DO(OP_DIV)\
 \
-    DO(EQ) DO(NEQ) DO(GREATER) DO(LESS) DO(GREATER_EQ) DO(LESS_EQ)\
-    DO(PUSH) DO(POP)\
-    DO(CONSTANT)\
+    DO(OP_EQ) DO(OP_NEQ) DO(OP_GREATER) DO(OP_LESS) DO(OP_GREATER_EQ) DO(OP_LESS_EQ)\
+    DO(OP_PUSH) DO(OP_POP)\
+    DO(OP_CONSTANT)\
 \
-    DO(JUMP)\
-
-#define OPCODE(x) OPCODE_ ## x
+    DO(OP_JUMP)\
 
 typedef enum {
-#define DEF_ENUM(x) OPCODE(x),
+#define DEF_ENUM(x) x,
     FOR_OPCODES(DEF_ENUM)
 #undef DEF_ENUM
 } Opcode;

@@ -23,7 +23,7 @@ String AtomType_toString(Atom atom) {
     return String_make("Invalid String");
 }
 
-List List_make() {
+List List_make(void) {
     return (List) {
         .length = 0,
         .allocated = 0,
@@ -55,7 +55,7 @@ Atom List_at(List* list, u64 index) {
     return list->data[index];
 }
 
-Fn Fn_make() {
+Fn Fn_make(void) {
     return (Fn) {
         .args_length = 0,
         .args_allocated = 0,

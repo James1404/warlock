@@ -24,8 +24,8 @@ void* Allocator_malloc(Allocator* allocator, usize size);
 // --- GLOBAL ALLOCATOR ---
 //
 
-void MainAllocator_init();
-void MainAllocator_free();
+void MainAllocator_init(void);
+void MainAllocator_free(void);
 
 void* MainAllocator_malloc(usize size);
 

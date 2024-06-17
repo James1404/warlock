@@ -58,11 +58,11 @@ void* Allocator_malloc(Allocator* allocator, usize size) {
 
 static Allocator main;
 
-void MainAllocator_init() {
+void MainAllocator_init(void) {
     main = Allocator_make(sizeof(u64) * 100000);
 }
 
-void MainAllocator_free() {
+void MainAllocator_free(void) {
     Allocator_free(&main);
 }
 

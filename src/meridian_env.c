@@ -6,7 +6,7 @@
 
 static Env env;
 
-void Env_init() {
+void Env_init(void) {
     env = (Env) {
         .scope = 0,
 
@@ -16,16 +16,16 @@ void Env_init() {
     };
 }
 
-void Env_free() {
+void Env_free(void) {
     if(env.locals) free(env.locals);
     Env_init();
 }
 
-void Env_inc() {
+void Env_inc(void) {
     env.scope++;
 }
 
-void Env_dec() {
+void Env_dec(void) {
     env.scope--;
 
     while(env.locals[env.length - 1].scope > env.scope) {

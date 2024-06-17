@@ -18,11 +18,11 @@ typedef struct {
     Local* locals;
 } Env;
 
-void Env_init();
-void Env_free();
+void Env_init(void);
+void Env_free(void);
 
-void Env_inc();
-void Env_dec();
+void Env_inc(void);
+void Env_dec(void);
 
 Atom Env_get(String name);
 void Env_set(String name, Atom atom);

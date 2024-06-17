@@ -1,4 +1,5 @@
 #include "meridian_eval.h"
+#include "meridian_atom.h"
 #include "meridian_error.h"
 #include "meridian_env.h"
 
@@ -59,7 +60,14 @@ Atom Eval_List(Atom atom) {
             List_push(&list, GET_ATOM_LIST(atom).data[i]);
         }
 
-        return GET_ATOM_INTRINSIC(fn)(list);
+        Intrinsic intrinsic = GET_ATOM_INTRINSIC(fn);
+
+        if((list.length == intrinsic.argc) || (intrinsic.argc == -1 && list.length > 0)) {
+            return intrinsic.fn(list);
+        }
+
+        Meridian_error("invalid argument count");
+        return ATOM_NIL();
     }
 
     if(fn.ty == ATOM_FN) {

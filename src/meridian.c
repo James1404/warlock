@@ -11,17 +11,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void Meridian_init() {
+void Meridian_init(void) {
     MainAllocator_init();
     Env_init();
 }
 
-void Meridian_free() {
+void Meridian_free(void) {
     Env_free();
     MainAllocator_free();
 }
 
-#define BUILTIN(name, fn) Env_set(String_make(name), ATOM_INTRINSIC(&fn))
+#define BUILTIN(name, fn, argc) Env_set(String_make(name), ATOM_INTRINSIC(&fn, argc, name))
 #define GLOBAL(name, value) Env_set(String_make(name), value)
 
 Atom meridian_add(List args) {
@@ -69,11 +69,6 @@ Atom meridian_div(List args) {
 }
 
 Atom meridian_eq(List args) {
-    if(args.length != 2) {
-        Meridian_error("expected two arguments to compare");
-        return ATOM_NIL();
-    }
-
     Atom lhs = args.data[0];
     Atom rhs = args.data[1];
 
@@ -95,11 +90,6 @@ Atom meridian_eq(List args) {
 }
 
 Atom meridian_not(List args) {
-    if(args.length != 1) {
-        Meridian_error("expected one argument");
-        return ATOM_NIL();
-    }
-
     Atom arg = args.data[0];
 
     if(arg.ty != ATOM_BOOLEAN) {
@@ -111,11 +101,6 @@ Atom meridian_not(List args) {
 }
 
 Atom meridian_greater(List args) {
-    if(args.length != 2) {
-        Meridian_error("expected two arguments to compare");
-        return ATOM_NIL();
-    }
-
     Atom lhs = args.data[0];
     Atom rhs = args.data[1];
 
@@ -135,11 +120,6 @@ Atom meridian_greater(List args) {
 }
 
 Atom meridian_lesser(List args) {
-    if(args.length != 2) {
-        Meridian_error("expected two arguments to compare");
-        return ATOM_NIL();
-    }
-
     Atom lhs = args.data[0];
     Atom rhs = args.data[1];
 
@@ -159,11 +139,6 @@ Atom meridian_lesser(List args) {
 }
 
 Atom meridian_and(List args) {
-    if(args.length <= 1) {
-        Meridian_error("expected more than one argument");
-        return ATOM_NIL();
-    }
-
     for(u64 i = 0; i < args.length; i++) {
         if(!GET_ATOM_BOOLEAN(args.data[i])) {
             return ATOM_BOOLEAN(false);
@@ -174,11 +149,6 @@ Atom meridian_and(List args) {
 }
 
 Atom meridian_or(List args) {
-    if(args.length <= 1) {
-        Meridian_error("expected more than one argument");
-        return ATOM_NIL();
-    }
-
     for(u64 i = 0; i < args.length; i++) {
         if(GET_ATOM_BOOLEAN(args.data[i])) {
             return ATOM_BOOLEAN(true);
@@ -189,11 +159,6 @@ Atom meridian_or(List args) {
 }
 
 Atom meridian_head(List args) {
-    if(args.length != 1) {
-        Meridian_error("expected one arg");
-        return ATOM_NIL();
-    }
-
     Atom arg = args.data[0];
 
     if(arg.ty != ATOM_LIST) return arg;
@@ -202,11 +167,6 @@ Atom meridian_head(List args) {
 }
 
 Atom meridian_tail(List args) {
-    if(args.length != 1) {
-        Meridian_error("expected one arg");
-        return ATOM_NIL();
-    }
-
     Atom arg = args.data[0];
 
     if(arg.ty != ATOM_LIST) return arg;
@@ -215,11 +175,6 @@ Atom meridian_tail(List args) {
 }
 
 Atom meridian_concat(List args) {
-    if(args.length != 1) {
-        Meridian_error("expected one arg");
-        return ATOM_NIL();
-    }
-
     Atom arg = args.data[0];
 
     if(arg.ty != ATOM_LIST) return arg;
@@ -228,11 +183,6 @@ Atom meridian_concat(List args) {
 }
 
 Atom meridian_println(List args) {
-    if(args.length == 0) {
-        Meridian_error("expected multiple arguments");
-        return ATOM_NIL();
-    }
-
     for(u64 i = 0; i < args.length; i++) {
         Printer_Atom(args.data[i]);
     }
@@ -243,11 +193,6 @@ Atom meridian_println(List args) {
 }
 
 Atom meridian_import(List args) {
-    if(args.length != 1) {
-        Meridian_error("expected one arg");
-        return ATOM_NIL();
-    }
-
     Atom arg = args.data[0];
 
     if(arg.ty != ATOM_STRING) return arg;
@@ -257,32 +202,32 @@ Atom meridian_import(List args) {
     return ATOM_NIL();
 }
 
-void Meridian_builtin() {
-    BUILTIN("+", meridian_add);
-    BUILTIN("-", meridian_sub);
-    BUILTIN("*", meridian_mul);
-    BUILTIN("/", meridian_div);
+void Meridian_builtin(void) {
+    BUILTIN("+", meridian_add, -1);
+    BUILTIN("-", meridian_sub, -1);
+    BUILTIN("*", meridian_mul, -1);
+    BUILTIN("/", meridian_div, -1);
 
-    BUILTIN("=", meridian_eq);
-    BUILTIN("!", meridian_not);
+    BUILTIN("=", meridian_eq, 2);
+    BUILTIN("!", meridian_not, 1);
 
-    BUILTIN(">", meridian_greater);
-    BUILTIN("<", meridian_lesser);
+    BUILTIN(">", meridian_greater, 2);
+    BUILTIN("<", meridian_lesser, 2);
 
-    BUILTIN("and", meridian_and);
-    BUILTIN("or", meridian_or);
+    BUILTIN("and", meridian_and, -1);
+    BUILTIN("or", meridian_or, -1);
 
     GLOBAL("true", ATOM_BOOLEAN(true));
     GLOBAL("false", ATOM_BOOLEAN(false));
 
     GLOBAL("nil", ATOM_NIL());
 
-    BUILTIN("println", meridian_println);
+    BUILTIN("println", meridian_println, -1);
 
-    BUILTIN("import", meridian_import);
+    BUILTIN("import", meridian_import, 1);
 
-    BUILTIN("head", meridian_head);
-    BUILTIN("tail", meridian_tail);
+    BUILTIN("head", meridian_head, 1);
+    BUILTIN("tail", meridian_tail, 1);
 }
 
 #define DEBUG_PRINT

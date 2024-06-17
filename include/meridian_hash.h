@@ -34,7 +34,7 @@ typedef struct {
     HashMapEntry* buckets;
 } HashMap;
 
-HashMap HashMap_make();
+HashMap HashMap_make(void);
 void HashMap_free(HashMap* hashmap);
 
 void HashMap_set(HashMap* hashmap, String key, Atom value);
@@ -58,7 +58,7 @@ typedef struct {
     HashSetEntry* buckets;
 } HashSet;
 
-HashSet HashSet_make();
+HashSet HashSet_make(void);
 void HashSet_free(HashSet* hashset);
 
 void HashSet_add(HashSet* hashset, String key);

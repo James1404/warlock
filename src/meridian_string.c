@@ -1,7 +1,5 @@
 #include "meridian_string.h"
 
-#include "meridian_allocator.h"
-
 #include <stdio.h>
 #include <stdlib.h>
 

@@ -11,7 +11,7 @@ typedef struct {
     Atom* data;
 } List;
 
-List List_make();
+List List_make(void);
 void List_free(List* list);
 
 void List_push(List* list, Atom atom);
@@ -24,11 +24,17 @@ typedef struct {
     Atom* body;
 } Fn;
 
-Fn Fn_make();
+Fn Fn_make(void);
 void Fn_free(Fn* fn);
 void Fn_push(Fn* fn, String arg);
 
-typedef Atom (*Intrinsic)(List args);
+typedef Atom (*InstrinicFn)(List args);
+typedef struct {
+    InstrinicFn fn;
+    i64 argc;
+
+    String name;
+} Intrinsic;
 
 typedef struct {
     void* ptr;
@@ -69,7 +75,7 @@ struct Atom {
 #define ATOM_SYMBOL(value) ((Atom) { .ty = ATOM_SYMBOL, .as.string = value  })
 #define ATOM_KEYWORD(value) ((Atom) { .ty = ATOM_KEYWORD, .as.string = value  })
 #define ATOM_FN() ((Atom) { .ty = ATOM_FN, .as.fn = Fn_make() })
-#define ATOM_INTRINSIC(fn) ((Atom) { .ty = ATOM_INTRINSIC, .as.intrinsic = fn })
+#define ATOM_INTRINSIC(__fn, __argc, __name) ((Atom) { .ty = ATOM_INTRINSIC, .as.intrinsic = { .fn = __fn, .argc = __argc, .name = String_make(__name) } })
 #define ATOM_FFI() ((Atom) { .ty = ATOM_FFI })
 #define ATOM_LIST() ((Atom) { .ty = ATOM_LIST, .as.list = List_make()  })
 #define ATOM_NIL() ((Atom) { .ty = ATOM_NIL })

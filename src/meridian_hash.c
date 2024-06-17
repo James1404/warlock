@@ -63,7 +63,7 @@ static HashMapEntry* HashMap_find_entry(HashMap* hashmap, Hash hash) {
     return entry;
 }
 
-HashMap HashMap_make() {
+HashMap HashMap_make(void) {
     return (HashMap) {
         .buckets = NULL,
         .allocated = 100,
@@ -133,7 +133,7 @@ static HashSetEntry* HashSet_find_entry(HashSet* hashset, Hash hash) {
     return entry;
 }
 
-HashSet HashSet_make() {
+HashSet HashSet_make(void) {
     return (HashSet) {
         .buckets = NULL,
         .allocated = 100,
