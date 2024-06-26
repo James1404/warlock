@@ -10,8 +10,8 @@
 
 (def fib (fn (n)
     (if (<= n 2)
-        2
-        (+ (fib (dec 1) (fib (- n 2))))
-    )))
+        1
+        (+ (fib (dec n)) (fib (- n 2))))
+    ))
 
-(println "hello, world" 25)
+(println (fib 20))

@@ -2,6 +2,7 @@
 #include "meridian_atom.h"
 #include "meridian_error.h"
 #include "meridian_env.h"
+#include "meridian_printer.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,8 +49,10 @@ Atom Eval_List(Atom atom) {
         }
     }
 
-    for(u64 i = 0; i < GET_ATOM_LIST(atom).length; i++) {
-        GET_ATOM_LIST(atom).data[i] = Eval_Atom(GET_ATOM_LIST(atom).data[i]);
+    List list = GET_ATOM_LIST(atom);
+    atom = ATOM_LIST();
+    for(u64 i = 0; i < list.length; i++) {
+        List_push(&GET_ATOM_LIST(atom), Eval_Atom(list.data[i]));
     }
 
     Atom fn = GET_ATOM_LIST(atom).data[0];

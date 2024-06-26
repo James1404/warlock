@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define PRINT_WHERE() printf("AT := %s\n", __func__)
+
 #define DEFINE_ATOMTYPE_TOSTRING(name, type)\
     case ATOM_TYPE_ ## name: return String_make(#name); break;
 

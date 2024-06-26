@@ -5,16 +5,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define CHECK_EOF(reader, val) do {\
+    if(Reader_eof(reader)) return val;\
+} while(0)
+
 static bool Reader_eof(Reader* reader) {
-    return reader->position >= reader->src.length;
+    return !(reader->position < reader->src.length);
 }
 
 static char Reader_current(Reader* reader) {
+    if(Reader_eof(reader)) {
+        return '\0';
+    }
+
     return String_index(reader->src, reader->position);
 }
 
 static void Reader_advance(Reader* reader) {
+    if(Reader_eof(reader)) return;
+
     reader->position++;
+    reader->line_pos++;
 }
 
 static bool Reader_match(Reader* reader, char expected) {
@@ -81,10 +92,19 @@ static bool Reader_SkipWhitespace(Reader* reader) {
     switch(c) {
         case '\n':
             reader->line++;
+            reader->line_pos = 0;
         case ' ':
+        case '\0':
+        case '\f':
         case '\t':
+        case '\v':
         case '\r':
             Reader_advance(reader);
+            return true;
+        case ';':
+            while(Reader_current(reader) != '\n') {
+                Reader_advance(reader);
+            }
             return true;
         default:
             return false;
@@ -92,7 +112,7 @@ static bool Reader_SkipWhitespace(Reader* reader) {
 }
 
 static void Reader_SkipAllWhitespace(Reader* reader) {
-    while(Reader_SkipWhitespace(reader));
+    while(!Reader_eof(reader) && Reader_SkipWhitespace(reader));
 }
 
 static Atom Reader_ReadList(Reader* reader);
@@ -156,7 +176,7 @@ static Atom Reader_ReadAtom(Reader* reader) {
         return Reader_ReadSymbol(reader);
     }
 
-    printf("ERROR INVALID ATOM :: '%02x'\n", (unsigned char) c);
+    printf("Error invalid character [Line: %lu, Pos: %lu] :: '%02x'\n", reader->line, reader->line_pos, (unsigned char) c);
     return ATOM_NIL();
 }
 

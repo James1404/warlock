@@ -234,24 +234,11 @@ void Meridian_builtin(void) {
 #undef DEBUG_PRINT
 
 void Meridian_run(const char* src) {
-#ifdef DEBUG_PRINT
-    printf("--- INPUT ---\n");
-    printf("%s\n", src);
-#endif//DEBUG_PRINT
-
     Reader reader = Reader_make(String_make(src));
 
     Reader_run(&reader);
 
-    Atom final = Eval_Atom(reader.global);
-#ifdef DEBUG_PRINT
-    printf("--- Output ---\n");
-
-    Printer_Atom(final);
-    printf("\n");
-#else
-    (void)final;
-#endif//DEBUG_PRINT
+    Eval_Atom(reader.global);
 
     Reader_free(&reader);
 }

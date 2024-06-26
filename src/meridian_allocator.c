@@ -5,7 +5,7 @@
 static Chunk* Chunk_make(Allocator* parent) {
     Chunk* c = malloc(sizeof(Chunk));
     *c = (Chunk) {
-        .data = malloc(parent->chunksize),
+        .data = calloc(parent->chunksize, 1),
         .used = 0,
         .next = NULL
     };

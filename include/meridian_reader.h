@@ -7,7 +7,7 @@
 
 typedef struct {
     String src;
-    u64 start, position, line;
+    u64 start, position, line, line_pos;
 
     Atom global;
 } Reader;
