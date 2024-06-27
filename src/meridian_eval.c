@@ -2,10 +2,8 @@
 #include "meridian_atom.h"
 #include "meridian_error.h"
 #include "meridian_env.h"
-#include "meridian_printer.h"
 
 #include <stdlib.h>
-#include <stdio.h>
 
 void Eval_run(Atom atom) {
     Eval_Atom(atom);
@@ -17,8 +15,10 @@ Atom Eval_Atom(Atom atom) {
             return Eval_Atom(Env_get(GET_ATOM_SYMBOL(atom)));
         } break;
         case ATOM_LIST: return Eval_List(atom);
+        case ATOM_QUOTE: return *GET_ATOM_QUOTE(atom);
 
-        case ATOM_NUMBER:
+        case ATOM_INTEGER:
+        case ATOM_REAL:
         case ATOM_BOOLEAN:
         case ATOM_STRING:
         case ATOM_NIL:

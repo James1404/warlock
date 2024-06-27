@@ -8,6 +8,9 @@
 #include "meridian_printer.h"
 #include "meridian_reader.h"
 
+#include <llvm-c/Types.h>
+#include <llvm-c/Core.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -21,48 +24,101 @@ void Meridian_free(void) {
     MainAllocator_free();
 }
 
-#define BUILTIN(name, fn, argc) Env_set(String_make(name), ATOM_INTRINSIC(&fn, argc, name))
+#define INTRINSIC(name, fn, ret, varname, usevar)\
+    do {\
+        Atom atom = ATOM_INTRINSIC(name, &fn, ret);\
+        Intrinsic* varname = &GET_ATOM_INTRINSIC(atom);\
+        usevar\
+        Env_set(String_make(name), atom);\
+    } while(0);
+
+#define INTRINSIC_VARARG(name, fn, ret, argtype) Env_set(String_make(name), ATOM_INTRINSIC_VARIADIC(name, &fn, ret, argtype))
+
 #define GLOBAL(name, value) Env_set(String_make(name), value)
 
-Atom meridian_add(List args) {
-    Atom result = ATOM_NUMBER(0);
+Atom meridian_add_int(List args) {
+    Atom result = ATOM_INTEGER(0);
 
     for(u64 i = 0; i < args.length; i++) {
         // TODO: Add type checking for args (aka, make sure their all numbers)
-        GET_ATOM_NUMBER(result) += GET_ATOM_NUMBER(args.data[i]);
+        GET_ATOM_INTEGER(result) += GET_ATOM_INTEGER(args.data[i]);
     }
 
     return result;
 }
 
-Atom meridian_sub(List args) {
+Atom meridian_sub_int(List args) {
     Atom result = args.data[0];
 
     for(u64 i = 1; i < args.length; i++) {
         // TODO: Add type checking for args (aka, make sure their all numbers)
-        GET_ATOM_NUMBER(result) -= GET_ATOM_NUMBER(args.data[i]);
+        GET_ATOM_INTEGER(result) -= GET_ATOM_INTEGER(args.data[i]);
     }
 
     return result;
 }
 
-Atom meridian_mul(List args) {
+Atom meridian_mul_int(List args) {
     Atom result = args.data[0];
 
     for(u64 i = 1; i < args.length; i++) {
         // TODO: Add type checking for args (aka, make sure their all numbers)
-        GET_ATOM_NUMBER(result) *= GET_ATOM_NUMBER(args.data[i]);
+        GET_ATOM_INTEGER(result) *= GET_ATOM_INTEGER(args.data[i]);
     }
 
     return result;
 }
 
-Atom meridian_div(List args) {
+Atom meridian_div_int(List args) {
     Atom result = args.data[0];
 
     for(u64 i = 1; i < args.length; i++) {
         // TODO: Add type checking for args (aka, make sure their all numbers)
-        GET_ATOM_NUMBER(result) /= GET_ATOM_NUMBER(args.data[i]);
+        GET_ATOM_INTEGER(result) /= GET_ATOM_INTEGER(args.data[i]);
+    }
+
+    return result;
+}
+
+Atom meridian_add_real(List args) {
+    Atom result = ATOM_REAL(0);
+
+    for(u64 i = 0; i < args.length; i++) {
+        // TODO: Add type checking for args (aka, make sure their all numbers)
+        GET_ATOM_REAL(result) += GET_ATOM_REAL(args.data[i]);
+    }
+
+    return result;
+}
+
+Atom meridian_sub_real(List args) {
+    Atom result = args.data[0];
+
+    for(u64 i = 1; i < args.length; i++) {
+        // TODO: Add type checking for args (aka, make sure their all numbers)
+        GET_ATOM_REAL(result) -= GET_ATOM_REAL(args.data[i]);
+    }
+
+    return result;
+}
+
+Atom meridian_mul_real(List args) {
+    Atom result = args.data[0];
+
+    for(u64 i = 1; i < args.length; i++) {
+        // TODO: Add type checking for args (aka, make sure their all numbers)
+        GET_ATOM_REAL(result) *= GET_ATOM_REAL(args.data[i]);
+    }
+
+    return result;
+}
+
+Atom meridian_div_real(List args) {
+    Atom result = args.data[0];
+
+    for(u64 i = 1; i < args.length; i++) {
+        // TODO: Add type checking for args (aka, make sure their all numbers)
+        GET_ATOM_REAL(result) /= GET_ATOM_REAL(args.data[i]);
     }
 
     return result;
@@ -78,7 +134,8 @@ Atom meridian_eq(List args) {
     }
 
     switch(lhs.ty) {
-        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) == GET_ATOM_NUMBER(rhs));
+        case ATOM_INTEGER: return ATOM_BOOLEAN(GET_ATOM_INTEGER(lhs) == GET_ATOM_INTEGER(rhs));
+        case ATOM_REAL: return ATOM_BOOLEAN(GET_ATOM_REAL(lhs) == GET_ATOM_REAL(rhs));
         case ATOM_BOOLEAN: return ATOM_BOOLEAN(GET_ATOM_BOOLEAN(lhs) == GET_ATOM_BOOLEAN(rhs));
         case ATOM_STRING: return ATOM_BOOLEAN(String_cmp(GET_ATOM_STRING(lhs), GET_ATOM_STRING(rhs)));
         case ATOM_SYMBOL: return ATOM_BOOLEAN(String_cmp(GET_ATOM_STRING(lhs), GET_ATOM_STRING(rhs)));
@@ -110,7 +167,8 @@ Atom meridian_greater(List args) {
     }
 
     switch(lhs.ty) {
-        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) > GET_ATOM_NUMBER(rhs));
+        case ATOM_INTEGER: return ATOM_BOOLEAN(GET_ATOM_INTEGER(lhs) > GET_ATOM_INTEGER(rhs));
+        case ATOM_REAL: return ATOM_BOOLEAN(GET_ATOM_REAL(lhs) > GET_ATOM_REAL(rhs));
         default:
            Meridian_error("Invalid comparison types"); 
            return ATOM_NIL();
@@ -129,7 +187,8 @@ Atom meridian_lesser(List args) {
     }
 
     switch(lhs.ty) {
-        case ATOM_NUMBER: return ATOM_BOOLEAN(GET_ATOM_NUMBER(lhs) < GET_ATOM_NUMBER(rhs));
+        case ATOM_INTEGER: return ATOM_BOOLEAN(GET_ATOM_INTEGER(lhs) < GET_ATOM_INTEGER(rhs));
+        case ATOM_REAL: return ATOM_BOOLEAN(GET_ATOM_REAL(lhs) < GET_ATOM_REAL(rhs));
         default:
            Meridian_error("Invalid comparison types"); 
            return ATOM_NIL();
@@ -203,31 +262,59 @@ Atom meridian_import(List args) {
 }
 
 void Meridian_builtin(void) {
-    BUILTIN("+", meridian_add, -1);
-    BUILTIN("-", meridian_sub, -1);
-    BUILTIN("*", meridian_mul, -1);
-    BUILTIN("/", meridian_div, -1);
+    INTRINSIC_VARARG("+", meridian_add_int, TYPE_INTEGER_ANY(), TYPE_INTEGER_ANY());
+    INTRINSIC_VARARG("-", meridian_sub_int, TYPE_INTEGER_ANY(), TYPE_INTEGER_ANY());
+    INTRINSIC_VARARG("*", meridian_mul_int, TYPE_INTEGER_ANY(), TYPE_INTEGER_ANY());
+    INTRINSIC_VARARG("/", meridian_div_int, TYPE_INTEGER_ANY(), TYPE_INTEGER_ANY());
 
-    BUILTIN("=", meridian_eq, 2);
-    BUILTIN("!", meridian_not, 1);
+    INTRINSIC_VARARG("+.", meridian_add_real, TYPE_REAL_ANY(), TYPE_REAL_ANY());
+    INTRINSIC_VARARG("-.", meridian_sub_real, TYPE_REAL_ANY(), TYPE_REAL_ANY());
+    INTRINSIC_VARARG("*.", meridian_mul_real, TYPE_REAL_ANY(), TYPE_REAL_ANY());
+    INTRINSIC_VARARG("/.", meridian_div_real, TYPE_REAL_ANY(), TYPE_REAL_ANY());
 
-    BUILTIN(">", meridian_greater, 2);
-    BUILTIN("<", meridian_lesser, 2);
+    INTRINSIC("=", meridian_eq, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
+    INTRINSIC("!", meridian_not, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
 
-    BUILTIN("and", meridian_and, -1);
-    BUILTIN("or", meridian_or, -1);
+    INTRINSIC(">", meridian_greater, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
+    INTRINSIC("<", meridian_lesser, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
+
+    INTRINSIC("and", meridian_and, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
+    INTRINSIC("or", meridian_or, TYPE_BOOLEAN(), func, {
+        Intrinsic_add_argument(func, TYPE_ANY());
+        Intrinsic_add_argument(func, TYPE_ANY());
+    });
 
     GLOBAL("true", ATOM_BOOLEAN(true));
     GLOBAL("false", ATOM_BOOLEAN(false));
 
     GLOBAL("nil", ATOM_NIL());
 
-    BUILTIN("println", meridian_println, -1);
+    INTRINSIC_VARARG("println", meridian_println, TYPE_ANY(), TYPE_UNIT());
 
-    BUILTIN("import", meridian_import, 1);
+    INTRINSIC("import", meridian_import, TYPE_UNIT(), func, {
+        Intrinsic_add_argument(func, TYPE_STRING());
+    });
 
-    BUILTIN("head", meridian_head, 1);
-    BUILTIN("tail", meridian_tail, 1);
+    INTRINSIC("head", meridian_head, TYPE_ANY(), func, {
+        Intrinsic_add_argument(func, TYPE_LIST());
+    });
+    INTRINSIC("tail", meridian_tail, TYPE_ANY(), func, {
+        Intrinsic_add_argument(func, TYPE_LIST());
+    });
 }
 
 #define DEBUG_PRINT

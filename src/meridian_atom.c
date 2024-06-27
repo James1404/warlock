@@ -10,7 +10,8 @@
 
 String AtomType_toString(Atom atom) {
     switch(atom.ty) {
-        case ATOM_NUMBER: return String_make("NUMBER");
+        case ATOM_INTEGER: return String_make("INTEGER");
+        case ATOM_REAL: return String_make("REAL");
         case ATOM_BOOLEAN: return String_make("BOOLEAN");
         case ATOM_STRING: return String_make("STRING");
         case ATOM_SYMBOL: return String_make("SYMBOL");
@@ -19,6 +20,7 @@ String AtomType_toString(Atom atom) {
         case ATOM_INTRINSIC: return String_make("INTRINSIC");
         case ATOM_FFI: return String_make("FFI");
         case ATOM_LIST: return String_make("LIST");
+        case ATOM_QUOTE: return String_make("QUOTE");
         case ATOM_NIL: return String_make("NIL");
     }
 
@@ -84,4 +86,39 @@ void Fn_push(Fn* fn, String arg) {
         fn->args_allocated *= 2;
         fn->args = realloc(fn->args, sizeof(String)*fn->args_allocated);
     }
+}
+
+Intrinsic Intrinsic_make(const char* name, IntrinsicFn fn, Type ret) {
+    return (Intrinsic) {
+        .name = name,
+        .fn = fn,
+        .ret = ret,
+        .argc = 0,
+        .args = NULL,
+    };
+}
+
+Intrinsic Intrinsic_make_variadic(const char* name, IntrinsicFn fn, Type ret, Type argtype) {
+    Type* args = malloc(sizeof(*args));
+    *args = argtype;
+    return (Intrinsic) {
+        .name = name,
+        .fn = fn,
+        .ret = ret,
+        .argc = -1,
+        .args = args,
+    };
+}
+
+void Intrinsic_free(Intrinsic* intrinsic) {
+    if(intrinsic->args) free(intrinsic->args);
+    *intrinsic = (Intrinsic) {0};
+}
+
+void Intrinsic_add_argument(Intrinsic* intrinsic, Type type) {
+    u64 idx = intrinsic->argc++;
+
+    intrinsic->args = realloc(intrinsic->args, sizeof(intrinsic->args[0]) * intrinsic->argc);
+
+    intrinsic->args[idx] = type;
 }

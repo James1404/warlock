@@ -4,10 +4,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
-#define CHECK_EOF(reader, val) do {\
-    if(Reader_eof(reader)) return val;\
-} while(0)
+#include <string.h>
 
 static bool Reader_eof(Reader* reader) {
     return !(reader->position < reader->src.length);
@@ -64,6 +61,7 @@ static bool isSymbolCharStart(char c) {
         case '%':
         case '^':
         case '&':
+        case '.':
             return true;
         default:
             return isLetter(c);
@@ -143,9 +141,23 @@ static Atom Reader_ReadAtom(Reader* reader) {
     char c = Reader_current(reader);
     reader->start = reader->position;
 
+    if(c == '\'') {
+        Reader_advance(reader);
+        Atom atom = Reader_ReadAtom(reader);
+        Atom quote = ATOM_QUOTE(malloc(sizeof(Atom)));
+
+        memcpy(GET_ATOM_QUOTE(quote), &atom, sizeof(Atom));
+
+        return quote;
+    }
+
     if(c == '"') {
         do {
             Reader_advance(reader);
+            if(Reader_eof(reader)) {
+                Meridian_error("Reached end-of-file without finding '\"' character");
+                return ATOM_NIL();
+            }
         } while(Reader_current(reader) != '"');
 
         u64 strStart = reader->start + 1;
@@ -158,14 +170,25 @@ static Atom Reader_ReadAtom(Reader* reader) {
     }
     
     if(isNumber(c)) {
+        bool is_real = false;
         while(isNumber(c) || c == '.') {
+            if(c == '.') is_real = true;
             Reader_advance(reader);
             c = Reader_current(reader);
         }
 
         String text = String_substr(reader->src, reader->start, reader->position - reader->start);
 
-        return ATOM_NUMBER(strtod(text.data, NULL));
+        Atom value = {0};
+
+        if(is_real) {
+            value = ATOM_REAL(strtod(text.data, NULL));
+        }
+        else {
+            value = ATOM_INTEGER(strtoll(text.data, NULL, 0));
+        }
+
+        return value;
     }
 
     if(c == '(') {
@@ -187,6 +210,11 @@ static Atom Reader_ReadList(Reader* reader) {
 
     if(Reader_match(reader, '(')) {
         while(!Reader_match(reader, ')')) {
+            if(Reader_eof(reader)) {
+                Meridian_error("Reached end-of-file without finding ')' character");
+                return ATOM_NIL();
+            }
+
             List_push(&GET_ATOM_LIST(list), Reader_ReadAtom(reader));
             Reader_SkipAllWhitespace(reader);
         }

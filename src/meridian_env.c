@@ -72,3 +72,11 @@ void Env_set(String name, Atom atom) {
         .atom = atom,
     };
 }
+
+Type Eval_Check(Atom atom, Type expected) {
+    return TYPE_UNIT();
+}
+
+Type Eval_Infer(Atom atom) {
+    return TYPE_UNIT();
+}

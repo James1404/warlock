@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.27.7)
 
 project(meridian VERSION 0.01)
 
+find_package(LLVM REQUIRED CONFIG)
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
 set(CMAKE_C_STANDARD 99)
@@ -13,7 +15,13 @@ set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 #add_compile_options(-fsanitize=address)
 #add_link_options(-fsanitize=address)
 
+include_directories(${LLVM_INCLUDE_DIRS})
+separate_arguments(LLVM_DEFINITIONS_LIST NATIVE_COMMAND ${LLVM_DEFINITIONS})
+add_definitions(${LLVM_DEFINITIONS_LIST})
+
 add_executable(meridian)
+
+llvm_map_components_to_libnames(llvm_libs support core irreader)
 
 if(MSVC)
   target_compile_options(meridian PRIVATE /W4)
@@ -27,6 +35,8 @@ file(GLOB meridian_src
 	${meridian_CURRENT_DIR}/src/*.cpp
 	${meridian_CURRENT_DIR}/src/*.c
 )
+
+target_link_libraries(meridian ${llvm_libs})
 
 target_sources(meridian PRIVATE ${meridian_src})
 

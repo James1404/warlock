@@ -14,4 +14,7 @@ Atom Eval_Def(Atom atom);
 Atom Eval_Fn(Atom atom);
 Atom Eval_If(Atom atom);
 
+Type Eval_Check(Atom atom, Type expected);
+Type Eval_Infer(Atom atom);
+
 #endif//MERIDIAN_EVAL_H

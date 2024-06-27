@@ -4,8 +4,11 @@
 
 void Printer_Atom(Atom atom) {
     switch(atom.ty) {
-        case ATOM_NUMBER: {
-            printf("%Lf", GET_ATOM_NUMBER(atom));
+        case ATOM_INTEGER: {
+            printf("%ld", GET_ATOM_INTEGER(atom));
+        } break;
+        case ATOM_REAL: {
+            printf("%Lf", GET_ATOM_REAL(atom));
         } break;
         case ATOM_BOOLEAN: {
             bool v = GET_ATOM_BOOLEAN(atom);
@@ -60,6 +63,11 @@ void Printer_Atom(Atom atom) {
             printf("ffi");
             break;
         } break;
+        case ATOM_QUOTE: {
+            printf("'");
+            Printer_Atom(*GET_ATOM_QUOTE(atom));
+            break;
+        }
         case ATOM_NIL: {
             printf("NIL");
         } break;
