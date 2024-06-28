@@ -14,4 +14,4 @@
         (+ (fib (dec n)) (fib (- n 2))))
     ))
 
-(println (fib 30))
+(println (fib 20))

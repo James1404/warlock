@@ -183,3 +183,44 @@ Atom Eval_Fn(Atom atom) {
     
     return result;
 }
+
+Type Eval_Check(Atom atom, Type expected) {
+    return TYPE_UNKNOWN();
+}
+
+Type Eval_Infer(Atom atom) {
+    switch(atom.ty) {
+        case ATOM_REAL: return TYPE_REAL(REAL_WIDTH32);
+        case ATOM_INTEGER: return TYPE_INTEGER(INTEGER_WIDTH32, INTEGER_SIGNED);
+        case ATOM_BOOLEAN: return TYPE_BOOLEAN();
+        case ATOM_STRING: return TYPE_STRING();
+        case ATOM_LIST: return TYPE_LIST();
+
+        case ATOM_INTRINSIC: {
+            Intrinsic data = GET_ATOM_INTRINSIC(atom);
+            Type ty = TYPE_FN();
+
+            ty.extra.fn.ret = malloc(sizeof(Type));
+            *ty.extra.fn.ret = data.ret;
+
+            for(u32 i = 0; i < data.argc; i++) {
+                Type_add_arg(&ty, data.args[i]);
+            }
+
+            return ty;
+        } break;
+        case ATOM_FN: {
+            Type ty = TYPE_FN();
+
+            ty.extra.fn.ret = malloc(sizeof(Type));
+            *ty.extra.fn.ret = Eval_Infer(*GET_ATOM_FN(atom).body);
+
+            return ty;
+        } break;
+        default:
+            Meridian_error("Cannot infer type of invalid atom");
+            break;
+    }
+
+    return TYPE_UNKNOWN();
+}

@@ -29,7 +29,7 @@ typedef enum {
     REAL_WIDTH64,
 } RealWidth;
 
-typedef struct {
+typedef struct Type {
     enum {
         TYPE_UNKNOWN,
 
@@ -57,15 +57,16 @@ typedef struct {
             RealWidth width;
         } real;
         struct {
-            Atom* args;
-            u64 args_len;
+            struct Type* ret;
 
-            Atom* body;
+            i64 argc;
+            struct Type* args;
         } fn;
     } extra;
 } Type;
 
-#define TYPE_UNKNOWN() ((Type) { .type = TYPE_UNKOWN })
+#define TYPE_UNKNOWN() ((Type) { .type = TYPE_UNKNOWN })
+
 #define TYPE_UNIT() ((Type) { .type = TYPE_UNIT })
 #define TYPE_BOOLEAN() ((Type) { .type = TYPE_BOOLEAN })
 
@@ -75,12 +76,13 @@ typedef struct {
 #define TYPE_REAL(w) ((Type) { .type = TYPE_REAL, .extra.real = { .width = w } })
 #define TYPE_REAL_ANY() ((Type) { .type = TYPE_REAL, .extra.real = { .width = REAL_WIDTH_ANY } })
 
-
 #define TYPE_STRING() ((Type) { .type = TYPE_STRING })
-#define TYPE_FN() ((Type) { .type = TYPE_FN, .extra.fn = {} }) // todo
+#define TYPE_FN(__ret) ((Type) { .type = TYPE_FN, .extra.fn = { 0 } }) // todo
 #define TYPE_LIST() ((Type) { .type = TYPE_LIST })
 
 #define TYPE_ANY() ((Type) { .type = TYPE_ANY })
+
+void Type_add_arg(Type* type, Type arg);
 
 typedef struct {
     u64 length, allocated;

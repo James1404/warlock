@@ -61,7 +61,7 @@ void Env_set(String name, Atom atom) {
             env.locals = temp;
         }
         else {
-            Meridian_error("Env_set, realloc error");
+            Meridian_error("Env_set realloc error");
             return;
         }
     }
@@ -71,12 +71,4 @@ void Env_set(String name, Atom atom) {
         .name = String_copy(name),
         .atom = atom,
     };
-}
-
-Type Eval_Check(Atom atom, Type expected) {
-    return TYPE_UNIT();
-}
-
-Type Eval_Infer(Atom atom) {
-    return TYPE_UNIT();
 }
