@@ -42,7 +42,7 @@ Atom Env_get(String name) {
         }
     }
 
-    Meridian_error("Could not find symbol in current environment");
+    Meridian_error("Could not find symbol in type environment");
     return ATOM_NIL();
 }
 

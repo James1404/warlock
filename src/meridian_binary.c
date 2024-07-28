@@ -13,7 +13,7 @@ void error(const char* msg, ErrorSeverity severity) {
     printf("%s\n", msg);
 }
 
-int main() {
+int main(int argc, char** argv) {
     Meridian_init();
 
     Meridian_set_error_callback(&error);

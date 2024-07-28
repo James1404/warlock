@@ -194,7 +194,14 @@ Type Eval_Infer(Atom atom) {
         case ATOM_INTEGER: return TYPE_INTEGER(INTEGER_WIDTH32, INTEGER_SIGNED);
         case ATOM_BOOLEAN: return TYPE_BOOLEAN();
         case ATOM_STRING: return TYPE_STRING();
-        case ATOM_LIST: return TYPE_LIST();
+        case ATOM_LIST: {
+            Type atomTy = TYPE_LIST();
+            List list = GET_ATOM_LIST(atom);
+            for(u32 i = 0; i < list.length; i++) {
+                Type ty = Eval_Infer(list.data[i]);
+            }
+            return TYPE_LIST();
+        } break;
 
         case ATOM_INTRINSIC: {
             Intrinsic data = GET_ATOM_INTRINSIC(atom);

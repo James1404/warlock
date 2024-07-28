@@ -3,86 +3,9 @@
 
 #include "meridian_common.h"
 #include "meridian_string.h"
+#include "meridian_types.h"
 
 typedef struct Atom Atom;
-
-typedef enum {
-    INTEGER_WIDTH_ANY,
-
-    INTEGER_WIDTH8,
-    INTEGER_WIDTH16,
-    INTEGER_WIDTH32,
-    INTEGER_WIDTH64,
-} IntegerWidth;
-
-typedef enum {
-    INTEGER_SIGN_ANY,
-
-    INTEGER_UNSIGNED,
-    INTEGER_SIGNED,
-} IntegerSign;
-
-typedef enum {
-    REAL_WIDTH_ANY,
-
-    REAL_WIDTH32,
-    REAL_WIDTH64,
-} RealWidth;
-
-typedef struct Type {
-    enum {
-        TYPE_UNKNOWN,
-
-        TYPE_UNIT,
-
-        TYPE_BOOLEAN,
-
-        TYPE_INTEGER,
-        TYPE_REAL,
-
-        TYPE_STRING,
-        TYPE_FN,
-
-        TYPE_LIST,
-
-        TYPE_ANY,
-    } type;
-
-    union {
-        struct {
-            IntegerWidth width;
-            IntegerSign sign;
-        } integer;
-        struct {
-            RealWidth width;
-        } real;
-        struct {
-            struct Type* ret;
-
-            i64 argc;
-            struct Type* args;
-        } fn;
-    } extra;
-} Type;
-
-#define TYPE_UNKNOWN() ((Type) { .type = TYPE_UNKNOWN })
-
-#define TYPE_UNIT() ((Type) { .type = TYPE_UNIT })
-#define TYPE_BOOLEAN() ((Type) { .type = TYPE_BOOLEAN })
-
-#define TYPE_INTEGER(w, s) ((Type) { .type = TYPE_INTEGER, .extra.integer = { .width = w, .sign = s } })
-#define TYPE_INTEGER_ANY() ((Type) { .type = TYPE_INTEGER, .extra.integer = { .width = INTEGER_WIDTH_ANY, .sign = INTEGER_SIGN_ANY } })
-
-#define TYPE_REAL(w) ((Type) { .type = TYPE_REAL, .extra.real = { .width = w } })
-#define TYPE_REAL_ANY() ((Type) { .type = TYPE_REAL, .extra.real = { .width = REAL_WIDTH_ANY } })
-
-#define TYPE_STRING() ((Type) { .type = TYPE_STRING })
-#define TYPE_FN(__ret) ((Type) { .type = TYPE_FN, .extra.fn = { 0 } }) // todo
-#define TYPE_LIST() ((Type) { .type = TYPE_LIST })
-
-#define TYPE_ANY() ((Type) { .type = TYPE_ANY })
-
-void Type_add_arg(Type* type, Type arg);
 
 typedef struct {
     u64 length, allocated;

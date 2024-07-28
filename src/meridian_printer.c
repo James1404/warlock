@@ -16,15 +16,15 @@ void Printer_Atom(Atom atom) {
         } break;
         case ATOM_STRING: {
             String str = GET_ATOM_STRING(atom);
-            printf("%.*s", str.length, str.data);
+            printf("%.*s", str.len, str.data);
         } break;
         case ATOM_SYMBOL: {
             String sym = GET_ATOM_SYMBOL(atom);
-            printf("%.*s", sym.length, sym.data);
+            printf("%.*s", sym.len, sym.data);
         } break;
         case ATOM_KEYWORD: {
             String key = GET_ATOM_KEYWORD(atom);
-            printf("%.*s", key.length, key.data);
+            printf("%.*s", key.len, key.data);
         } break;
         case ATOM_LIST: {
             List l = GET_ATOM_LIST(atom);

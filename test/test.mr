@@ -15,3 +15,6 @@
     ))
 
 (println (fib 20))
+
+(def ok "ok")
+(println ok)

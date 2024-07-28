@@ -7,7 +7,7 @@
 #include <string.h>
 
 static bool Reader_eof(Reader* reader) {
-    return !(reader->position < reader->src.length);
+    return !(reader->position < reader->src.len);
 }
 
 static char Reader_current(Reader* reader) {

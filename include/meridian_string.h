@@ -7,14 +7,14 @@
 
 typedef struct {
     byte* data;
-    i32 length;
+    i32 len;
 } String;
 
 String String_make(const byte* raw);
 String String_copy(String other);
 
 byte String_index(String str, i32 pos);
-String String_substr(String other, i32 pos, i32 length);
+String String_substr(String other, i32 pos, i32 len);
 
 const byte* String_get_raw(String str);
 

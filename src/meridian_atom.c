@@ -27,14 +27,6 @@ String AtomType_toString(Atom atom) {
     return String_make("Invalid String");
 }
 
-void Type_add_arg(Type* type, Type arg) {
-    u64 idx = type->extra.fn.argc++;
-
-    type->extra.fn.args = realloc(type->extra.fn.args, sizeof(type->extra.fn.args[0]) * type->extra.fn.argc);
-
-    type->extra.fn.args[idx] = arg;
-}
-
 List List_make(void) {
     return (List) {
         .length = 0,
