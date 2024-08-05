@@ -67,4 +67,4 @@ build/
 *.el
 
 .direnv/
-.envrc/
+.envrc
