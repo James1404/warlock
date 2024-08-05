@@ -17,6 +17,7 @@
 	            bear
 	            gdb
               gperf
+              clang-tools
               llvm_18
             ];
           };

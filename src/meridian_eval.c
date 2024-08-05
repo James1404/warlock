@@ -36,16 +36,16 @@ Atom Eval_List(Atom atom) {
     Atom predicate = List_at(&GET_ATOM_LIST(atom), 0);
 
     if(predicate.ty == ATOM_SYMBOL) {
-        if(String_is(GET_ATOM_SYMBOL(predicate), "def")) {
-            return Eval_Def(atom);
+        if(String_is(GET_ATOM_SYMBOL(predicate), "define")) {
+            return Eval_Define(atom);
         }
 
         if(String_is(GET_ATOM_SYMBOL(predicate), "if")) {
             return Eval_If(atom);
         }
 
-        if(String_is(GET_ATOM_SYMBOL(predicate), "fn")) {
-            return Eval_Fn(atom);
+        if(String_is(GET_ATOM_SYMBOL(predicate), "lambda")) {
+            return Eval_Lambda(atom);
         }
     }
 
@@ -116,7 +116,7 @@ bool Eval_match(Atom atom, const char* expected) {
     return false;
 }
 
-Atom Eval_Def(Atom atom) {
+Atom Eval_Define(Atom atom) {
     if(atom.ty != ATOM_LIST) return ATOM_NIL();
 
     List list = GET_ATOM_LIST(atom);
@@ -126,7 +126,7 @@ Atom Eval_Def(Atom atom) {
         return ATOM_NIL();
     }
 
-    if(Eval_match(list.data[0], "def")) {
+    if(Eval_match(list.data[0], "define")) {
         if(list.data[1].ty == ATOM_SYMBOL) {
             Env_set(GET_ATOM_SYMBOL(list.data[1]), list.data[2]);
         }
@@ -158,9 +158,9 @@ Atom Eval_If(Atom atom) {
     return Eval_Atom(GET_ATOM_BOOLEAN(condition) ? list.data[2] : list.data[3]);
 }
 
-Atom Eval_Fn(Atom atom) {
+Atom Eval_Lambda(Atom atom) {
     if(atom.ty != ATOM_LIST) return ATOM_NIL();
-    if(!Eval_match(GET_ATOM_LIST(atom).data[0], "fn")) return ATOM_NIL();
+    if(!Eval_match(GET_ATOM_LIST(atom).data[0], "lambda")) return ATOM_NIL();
 
     Atom args = GET_ATOM_LIST(atom).data[1];
     Atom body = GET_ATOM_LIST(atom).data[2];
@@ -182,52 +182,4 @@ Atom Eval_Fn(Atom atom) {
     GET_ATOM_FN(result).body = memcpy(GET_ATOM_FN(result).body, &body, sizeof(Atom));
     
     return result;
-}
-
-Type Eval_Check(Atom atom, Type expected) {
-    return TYPE_UNKNOWN();
-}
-
-Type Eval_Infer(Atom atom) {
-    switch(atom.ty) {
-        case ATOM_REAL: return TYPE_REAL(REAL_WIDTH32);
-        case ATOM_INTEGER: return TYPE_INTEGER(INTEGER_WIDTH32, INTEGER_SIGNED);
-        case ATOM_BOOLEAN: return TYPE_BOOLEAN();
-        case ATOM_STRING: return TYPE_STRING();
-        case ATOM_LIST: {
-            Type atomTy = TYPE_LIST();
-            List list = GET_ATOM_LIST(atom);
-            for(u32 i = 0; i < list.length; i++) {
-                Type ty = Eval_Infer(list.data[i]);
-            }
-            return TYPE_LIST();
-        } break;
-
-        case ATOM_INTRINSIC: {
-            Intrinsic data = GET_ATOM_INTRINSIC(atom);
-            Type ty = TYPE_FN();
-
-            ty.extra.fn.ret = malloc(sizeof(Type));
-            *ty.extra.fn.ret = data.ret;
-
-            for(u32 i = 0; i < data.argc; i++) {
-                Type_add_arg(&ty, data.args[i]);
-            }
-
-            return ty;
-        } break;
-        case ATOM_FN: {
-            Type ty = TYPE_FN();
-
-            ty.extra.fn.ret = malloc(sizeof(Type));
-            *ty.extra.fn.ret = Eval_Infer(*GET_ATOM_FN(atom).body);
-
-            return ty;
-        } break;
-        default:
-            Meridian_error("Cannot infer type of invalid atom");
-            break;
-    }
-
-    return TYPE_UNKNOWN();
 }

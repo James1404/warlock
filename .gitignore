@@ -65,3 +65,6 @@ build/
 
 *~
 *.el
+
+.direnv/
+.envrc/

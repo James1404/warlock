@@ -87,38 +87,3 @@ void Fn_push(Fn* fn, String arg) {
         fn->args = realloc(fn->args, sizeof(String)*fn->args_allocated);
     }
 }
-
-Intrinsic Intrinsic_make(const char* name, IntrinsicFn fn, Type ret) {
-    return (Intrinsic) {
-        .name = name,
-        .fn = fn,
-        .ret = ret,
-        .argc = 0,
-        .args = NULL,
-    };
-}
-
-Intrinsic Intrinsic_make_variadic(const char* name, IntrinsicFn fn, Type ret, Type argtype) {
-    Type* args = malloc(sizeof(*args));
-    *args = argtype;
-    return (Intrinsic) {
-        .name = name,
-        .fn = fn,
-        .ret = ret,
-        .argc = -1,
-        .args = args,
-    };
-}
-
-void Intrinsic_free(Intrinsic* intrinsic) {
-    if(intrinsic->args) free(intrinsic->args);
-    *intrinsic = (Intrinsic) {0};
-}
-
-void Intrinsic_add_argument(Intrinsic* intrinsic, Type type) {
-    u64 idx = intrinsic->argc++;
-
-    intrinsic->args = realloc(intrinsic->args, sizeof(intrinsic->args[0]) * intrinsic->argc);
-
-    intrinsic->args[idx] = type;
-}

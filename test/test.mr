@@ -1,14 +1,14 @@
 (import "lib/std/comparison.mr")
 
-(def factorial (fn (n)
+(define factorial (lambda (n)
     (if (= n 0)
         1
         (* n (factorial (- n 1))))))
 
-(def dec (fn (x) (- x 1)))
-(def inc (fn (x) (+ x 1)))
+(define dec (lambda (x) (- x 1)))
+(define inc (lambda (x) (+ x 1)))
 
-(def fib (fn (n)
+(define fib (lambda (n)
     (if (<= n 2)
         1
         (+ (fib (dec n)) (fib (- n 2))))
@@ -16,5 +16,5 @@
 
 (println (fib 20))
 
-(def ok "ok")
+(define ok "ok")
 (println ok)

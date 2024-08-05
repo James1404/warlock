@@ -12,36 +12,6 @@ static LLVMBuilderRef builder;
 static LLVMModuleRef module;
 
 void codegen_atom(Atom atom) {
-    switch(atom.type.type) {
-        case TYPE_UNKNOWN: {
-		} break;
-
-        case TYPE_VAR:
-        {
-        } break;
-
-        case TYPE_UNIT: {
-		} break;
-
-        case TYPE_BOOLEAN: {
-		} break;
-
-        case TYPE_INTEGER: {
-		} break;
-        case TYPE_REAL: {
-		} break;
-
-        case TYPE_STRING: {
-		} break;
-        case TYPE_FN: {
-		} break;
-
-        case TYPE_LIST: {
-		} break;
-
-        case TYPE_ANY: {
-		} break;
-    }
 }
 
 void codegen_add_int(List args) {

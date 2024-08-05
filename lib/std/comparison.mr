@@ -1,6 +1,6 @@
-(def != (fn (x y) (! (= x y))))
+(define != (lambda (x y) (! (= x y))))
 
-(def >= (fn (x y) (or (> x y) (= x y))))
-(def <= (fn (x y) (or (< x y) (= x y))))
+(define >= (lambda (x y) (or (> x y) (= x y))))
+(define <= (lambda (x y) (or (< x y) (= x y))))
 
-(def print_parens (fn (x) (println "(" x ")")))
+(define print_parens (lambda (x) (println "(" x ")")))

@@ -3,7 +3,6 @@
 
 #include "meridian_common.h"
 #include "meridian_string.h"
-#include "meridian_types.h"
 
 typedef struct Atom Atom;
 
@@ -35,18 +34,8 @@ typedef struct {
 
     const char* name;
 
-    Type ret;
-
     i64 argc;
-    Type* args;
 } Intrinsic;
-
-Intrinsic Intrinsic_make(const char* name, IntrinsicFn fn, Type ret);
-Intrinsic Intrinsic_make_variadic(const char* name, IntrinsicFn fn, Type ret, Type argtype);
-
-void Intrinsic_free(Intrinsic* intrinsic);
-
-void Intrinsic_add_argument(Intrinsic* intrinsic, Type type);
 
 typedef struct {
     void* ptr;
@@ -80,8 +69,6 @@ struct Atom {
         FFI_Func ffi;
         Atom* quote;
     } as;
-
-    Type type;
 };
 
 //
@@ -95,9 +82,7 @@ struct Atom {
 #define ATOM_KEYWORD(value) ((Atom) { .ty = ATOM_KEYWORD, .as.string = value  })
 #define ATOM_FN() ((Atom) { .ty = ATOM_FN, .as.fn = Fn_make() })
 
-#define ATOM_INTRINSIC(__name, __fn, __ret) ((Atom) { .ty = ATOM_INTRINSIC, .as.intrinsic = Intrinsic_make(__name, __fn, __ret) })
-
-#define ATOM_INTRINSIC_VARIADIC(__name, __fn, __ret, __argtype) ((Atom) { .ty = ATOM_INTRINSIC, .as.intrinsic = Intrinsic_make_variadic(__name, __fn, __ret, __argtype) })
+#define ATOM_INTRINSIC(__name, __fn, __argc) ((Atom) { .ty = ATOM_INTRINSIC, .as.intrinsic = (Intrinsic) { .name = __name, .fn = __fn, .argc = __argc } })
 
 #define ATOM_FFI() ((Atom) { .ty = ATOM_FFI })
 #define ATOM_LIST() ((Atom) { .ty = ATOM_LIST, .as.list = List_make()  })
