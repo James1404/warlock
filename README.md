@@ -1,6 +1,6 @@
-# Meridian
+# Scheme-c
 
-A custom lisp dialect
+An WIP implementation of the [R5RS specification](https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/HTML/)
 
 
 ## Building
@@ -9,4 +9,6 @@ A custom lisp dialect
 
 - GCC
 - CMake
-- [GNU gperf](https://www.gnu.org/software/gperf/)
+- llvm-18
+
+The better option is to use the nix package manager and run `nix develop`
