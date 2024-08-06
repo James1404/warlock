@@ -1,5 +1,5 @@
-#include "meridian.h"
-#include "meridian_error.h"
+#include "scheme.h"
+#include "scheme_error.h"
 
 #include <stdio.h>
 
@@ -14,11 +14,11 @@ void error(const char* msg, ErrorSeverity severity) {
 }
 
 int main(int argc, char** argv) {
-    Meridian_init();
+    Scheme_init();
 
-    Meridian_set_error_callback(&error);
-    Meridian_builtin();
-    Meridian_run_file("test/test.mr");
+    Scheme_set_error_callback(&error);
+    Scheme_builtin();
+    Scheme_run_file("test/test.mr");
 
-    Meridian_free();
+    Scheme_free();
 }

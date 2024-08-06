@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_PRINTER_H
 #define MERIDIAN_PRINTER_H
 
-#include "meridian_atom.h"
+#include "scheme_atom.h"
 
 void Printer_Atom(Atom atom);
 void Printer_run(Atom atom);

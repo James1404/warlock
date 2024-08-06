@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_STRING_H
 #define MERIDIAN_STRING_H
 
-#include "meridian_common.h"
+#include "scheme_common.h"
 
 #define STR(s) String_make(s)
 

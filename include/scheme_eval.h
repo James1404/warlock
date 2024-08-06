@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_EVAL_H
 #define MERIDIAN_EVAL_H
 
-#include "meridian_atom.h"
+#include "scheme_atom.h"
 
 void Eval_run(Atom atom);
 

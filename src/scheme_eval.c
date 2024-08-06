@@ -1,7 +1,7 @@
-#include "meridian_eval.h"
-#include "meridian_atom.h"
-#include "meridian_error.h"
-#include "meridian_env.h"
+#include "scheme_eval.h"
+#include "scheme_atom.h"
+#include "scheme_error.h"
+#include "scheme_env.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -39,7 +39,7 @@ Atom Eval_Quote(Atom atom) {
     List list = GET_ATOM_LIST(atom);
 
     if(list.length != 2) {
-        Meridian_error("invalid quote");
+        Scheme_error("invalid quote");
         return ATOM_NIL();
     }
 
@@ -93,7 +93,7 @@ Atom Eval_List(Atom atom) {
             return intrinsic.fn(list);
         }
 
-        Meridian_error("invalid argument count");
+        Scheme_error("invalid argument count");
         return ATOM_NIL();
     }
 
@@ -109,7 +109,7 @@ Atom Eval_List(Atom atom) {
         Atom result = ATOM_NIL();
 
         if(list.length != GET_ATOM_FN(fn).args_length) {
-            Meridian_error("Invalid amount of arguments");
+            Scheme_error("Invalid amount of arguments");
             return ATOM_NIL();
         }
 
@@ -146,7 +146,7 @@ Atom Eval_Define(Atom atom) {
     List list = GET_ATOM_LIST(atom);
 
     if(list.length != 3) {
-        Meridian_error("invalid definition");
+        Scheme_error("invalid definition");
         return ATOM_NIL();
     }
 
@@ -165,7 +165,7 @@ Atom Eval_If(Atom atom) {
     List list = GET_ATOM_LIST(atom);
 
     if(list.length != 4) {
-        Meridian_error("invalid if statement");
+        Scheme_error("invalid if statement");
         return ATOM_NIL();
     }
 
@@ -175,7 +175,7 @@ Atom Eval_If(Atom atom) {
     
     Atom condition = Eval_Atom(list.data[1]);
     if(condition.ty != ATOM_BOOLEAN) {
-        Meridian_error("condition must be a boolean");
+        Scheme_error("condition must be a boolean");
         return ATOM_NIL();
     }
 
@@ -195,7 +195,7 @@ Atom Eval_Lambda(Atom atom) {
     for(u64 i = 0; i < GET_ATOM_LIST(args).length; i++) {
         Atom arg = GET_ATOM_LIST(args).data[i];
         if(arg.ty != ATOM_SYMBOL) {
-            Meridian_error("function parameters must all be symbols");
+            Scheme_error("function parameters must all be symbols");
             return ATOM_NIL();
         }
 

@@ -8,8 +8,8 @@ typedef enum {
 } ErrorSeverity;
 
 typedef void (*ErrorCallback)(const char* msg, ErrorSeverity severity);
-void Meridian_set_error_callback(ErrorCallback fn);
+void Scheme_set_error_callback(ErrorCallback fn);
 
-void Meridian_error(const char* msg);
+void Scheme_error(const char* msg);
 
 #endif//MERIDIAN_ERROR_H

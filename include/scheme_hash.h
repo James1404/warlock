@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_HASH_H
 #define MERIDIAN_HASH_H
 
-#include "meridian_common.h"
+#include "scheme_common.h"
 
 typedef usize Hash;
 

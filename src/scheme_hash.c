@@ -1,4 +1,4 @@
-#include "meridian_hash.h"
+#include "scheme_hash.h"
 
 Hash Hash_string(char* str, u64 len) {
     u32 b = 378551;

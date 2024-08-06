@@ -1,5 +1,5 @@
-#include "meridian_env.h"
-#include "meridian_error.h"
+#include "scheme_env.h"
+#include "scheme_error.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -42,7 +42,7 @@ Atom Env_get(String name) {
         }
     }
 
-    Meridian_error("Could not find symbol in type environment");
+    Scheme_error("Could not find symbol in type environment");
     return ATOM_NIL();
 }
 
@@ -61,7 +61,7 @@ void Env_set(String name, Atom atom) {
             env.locals = temp;
         }
         else {
-            Meridian_error("Env_set realloc error");
+            Scheme_error("Env_set realloc error");
             return;
         }
     }

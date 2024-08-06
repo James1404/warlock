@@ -1,4 +1,4 @@
-#include "meridian_atom.h"
+#include "scheme_atom.h"
 
 #include <stdlib.h>
 #include <stdio.h>

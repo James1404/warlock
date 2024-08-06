@@ -1,6 +1,6 @@
-#include "meridian_reader.h"
+#include "scheme_reader.h"
 
-#include "meridian_error.h"
+#include "scheme_error.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -155,7 +155,7 @@ static Atom Reader_ReadAtom(Reader* reader) {
         do {
             Reader_advance(reader);
             if(Reader_eof(reader)) {
-                Meridian_error("Reached end-of-file without finding '\"' character");
+                Scheme_error("Reached end-of-file without finding '\"' character");
                 return ATOM_NIL();
             }
         } while(Reader_current(reader) != '"');
@@ -211,7 +211,7 @@ static Atom Reader_ReadList(Reader* reader) {
     if(Reader_match(reader, '(')) {
         while(!Reader_match(reader, ')')) {
             if(Reader_eof(reader)) {
-                Meridian_error("Reached end-of-file without finding ')' character");
+                Scheme_error("Reached end-of-file without finding ')' character");
                 return ATOM_NIL();
             }
 

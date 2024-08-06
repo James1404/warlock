@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_ALLOCATOR_H
 #define MERIDIAN_ALLOCATOR_H
 
-#include "meridian_common.h"
+#include "scheme_common.h"
 
 typedef struct Chunk {
     u8* data;

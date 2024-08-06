@@ -1,6 +1,6 @@
-#include "meridian_vm.h"
+#include "scheme_vm.h"
 
-#include "meridian_error.h"
+#include "scheme_error.h"
 
 #include <stdlib.h>
 
@@ -31,7 +31,7 @@ void VM_push(VM* vm, Atom atom) {
             vm->stack = temp;
         }
         else {
-            Meridian_error("VM_push realloc error");
+            Scheme_error("VM_push realloc error");
             return;
         }
     }

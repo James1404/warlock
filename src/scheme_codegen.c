@@ -1,8 +1,8 @@
-#include "meridian_codegen.h"
+#include "scheme_codegen.h"
 
-#include "meridian_common.h"
-#include "meridian_error.h"
-#include "meridian_printer.h"
+#include "scheme_common.h"
+#include "scheme_error.h"
+#include "scheme_printer.h"
 
 #include <llvm-c/Core.h>
 #include <llvm-c/Types.h>
@@ -68,9 +68,9 @@ void codegen_concat(List args) {
 void codegen_println(List args) {
 }
 
-void Meridian_codegen(Atom root) {
+void Scheme_codegen(Atom root) {
     context = LLVMContextCreate();
-    module = LLVMModuleCreateWithName("Meridian");
+    module = LLVMModuleCreateWithName("Scheme");
     builder = LLVMCreateBuilderInContext(context);
 
     LLVMDisposeBuilder(builder);

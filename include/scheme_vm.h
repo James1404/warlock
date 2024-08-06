@@ -1,8 +1,8 @@
 #ifndef MERIDIAN_VM_H
 #define MERIDIAN_VM_H
 
-#include "meridian_atom.h"
-#include "meridian_opcodes.h"
+#include "scheme_atom.h"
+#include "scheme_opcodes.h"
 
 typedef struct {
     Opcode *code;

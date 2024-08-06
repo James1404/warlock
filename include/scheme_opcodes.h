@@ -1,7 +1,7 @@
 #ifndef MERIDIAN_OPCODES_H
 #define MERIDIAN_OPCODES_H
 
-#include "meridian_string.h"
+#include "scheme_string.h"
 
 #define FOR_OPCODES(DO)\
     DO(OP_ADD)\

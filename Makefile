@@ -1,7 +1,7 @@
 CC = gcc
 CPP = g++
 
-EXE = meridian
+EXE = scheme-c
 
 SRC_DIR = src
 BUILD_DIR = build
