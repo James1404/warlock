@@ -13,5 +13,6 @@ Atom Eval_List(Atom atom);
 Atom Eval_Define(Atom atom);
 Atom Eval_Lambda(Atom atom);
 Atom Eval_If(Atom atom);
+Atom Eval_Quote(Atom atom);
 
 #endif//MERIDIAN_EVAL_H

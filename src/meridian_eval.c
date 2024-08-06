@@ -4,6 +4,7 @@
 #include "meridian_env.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 void Eval_run(Atom atom) {
     Eval_Atom(atom);
@@ -32,10 +33,33 @@ Atom Eval_Atom(Atom atom) {
     return ATOM_NIL();
 }
 
+Atom Eval_Quote(Atom atom) {
+    if(atom.ty != ATOM_LIST) return ATOM_NIL();
+
+    List list = GET_ATOM_LIST(atom);
+
+    if(list.length != 2) {
+        Meridian_error("invalid quote");
+        return ATOM_NIL();
+    }
+
+    if(!Eval_match(list.data[0], "quote")) {
+        return ATOM_NIL();
+    }
+
+    Atom quote = ATOM_QUOTE(malloc(sizeof(Atom)));
+    memcpy(GET_ATOM_QUOTE(quote), list.data + 1, sizeof(Atom));
+    return list.data[1];
+}
+
 Atom Eval_List(Atom atom) {
     Atom predicate = List_at(&GET_ATOM_LIST(atom), 0);
 
     if(predicate.ty == ATOM_SYMBOL) {
+        if(String_is(GET_ATOM_SYMBOL(predicate), "quote")) {
+            return Eval_Quote(atom);
+        }
+        
         if(String_is(GET_ATOM_SYMBOL(predicate), "define")) {
             return Eval_Define(atom);
         }

@@ -18,3 +18,10 @@
 
 (define ok "ok")
 (println ok)
+
+(println (+ 5 2))
+
+(define a (quote (+ 5 2)))
+
+(println a)
+(println (eval '(+ 5 2)))

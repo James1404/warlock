@@ -1,6 +1,7 @@
 #include "meridian.h"
 
 #include "meridian_allocator.h"
+#include "meridian_atom.h"
 #include "meridian_common.h"
 #include "meridian_env.h"
 #include "meridian_error.h"
@@ -213,6 +214,12 @@ Atom meridian_import(List args) {
     return ATOM_NIL();
 }
 
+Atom meridian_eval(List args) {
+    Atom arg = args.data[0];
+
+    return Eval_Atom(*GET_ATOM_QUOTE(arg));
+}
+
 void Meridian_builtin(void) {
     INTRINSIC("+", meridian_add, -1);
     INTRINSIC("-", meridian_sub, -1);
@@ -235,6 +242,8 @@ void Meridian_builtin(void) {
     INTRINSIC("println", meridian_println, -1);
 
     INTRINSIC("import", meridian_import, 1);
+
+    INTRINSIC("eval", meridian_eval, 1);
 
     INTRINSIC("head", meridian_head, 1);
     INTRINSIC("tail", meridian_tail, 1);
