@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_ENV_H
-#define MERIDIAN_ENV_H
+#ifndef SCHEME_ENV_H
+#define SCHEME_ENV_H
 
 #include "scheme_atom.h"
 #include "scheme_string.h"
@@ -27,4 +27,4 @@ void Env_dec(void);
 Atom Env_get(String name);
 void Env_set(String name, Atom atom);
 
-#endif//MERIDIAN_ENV_H
+#endif//SCHEME_ENV_H

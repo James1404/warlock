@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_READER_H
-#define MERIDIAN_READER_H
+#ifndef SCHEME_READER_H
+#define SCHEME_READER_H
 
 #include "scheme_atom.h"
 #include "scheme_string.h"
@@ -17,4 +17,4 @@ void Reader_free(Reader* reader);
 
 void Reader_run(Reader* reader);
 
-#endif//MERIDIAN_READER_H
+#endif//SCHEME_READER_H

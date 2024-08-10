@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_ALLOCATOR_H
-#define MERIDIAN_ALLOCATOR_H
+#ifndef SCHEME_ALLOCATOR_H
+#define SCHEME_ALLOCATOR_H
 
 #include "scheme_common.h"
 
@@ -29,4 +29,4 @@ void MainAllocator_free(void);
 
 void* MainAllocator_malloc(usize size);
 
-#endif//MERIDIAN_ALLOCATOR_H
+#endif//SCHEME_ALLOCATOR_H

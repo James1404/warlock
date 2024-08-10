@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_EVAL_H
-#define MERIDIAN_EVAL_H
+#ifndef SCHEME_EVAL_H
+#define SCHEME_EVAL_H
 
 #include "scheme_atom.h"
 
@@ -15,4 +15,4 @@ Atom Eval_Lambda(Atom atom);
 Atom Eval_If(Atom atom);
 Atom Eval_Quote(Atom atom);
 
-#endif//MERIDIAN_EVAL_H
+#endif//SCHEME_EVAL_H

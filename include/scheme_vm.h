@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_VM_H
-#define MERIDIAN_VM_H
+#ifndef SCHEME_VM_H
+#define SCHEME_VM_H
 
 #include "scheme_atom.h"
 #include "scheme_opcodes.h"
@@ -25,4 +25,4 @@ void VM_run(VM* vm, Chunk* code);
 void VM_push(VM* vm, Atom atom);
 Atom VM_pop(VM* vm);
 
-#endif//MERIDIAN_VM_H
+#endif//SCHEME_VM_H

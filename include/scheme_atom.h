@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_ATOM_H
-#define MERIDIAN_ATOM_H
+#ifndef SCHEME_ATOM_H
+#define SCHEME_ATOM_H
 
 #include "scheme_common.h"
 #include "scheme_string.h"
@@ -105,4 +105,4 @@ struct Atom {
 #define GET_ATOM_LIST(atom) ((atom).as.list)
 #define GET_ATOM_QUOTE(atom) ((atom).as.quote)
 
-#endif//MERIDIAN_ATOM_H
+#endif//SCHEME_ATOM_H

@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_OPCODES_H
-#define MERIDIAN_OPCODES_H
+#ifndef SCHEME_OPCODES_H
+#define SCHEME_OPCODES_H
 
 #include "scheme_string.h"
 
@@ -23,4 +23,4 @@ typedef enum {
 
 String Opcode_toString(Opcode op);
 
-#endif//MERIDIAN_OPCODES_H
+#endif//SCHEME_OPCODES_H

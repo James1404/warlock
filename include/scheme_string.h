@@ -1,5 +1,5 @@
-#ifndef MERIDIAN_STRING_H
-#define MERIDIAN_STRING_H
+#ifndef SCHEME_STRING_H
+#define SCHEME_STRING_H
 
 #include "scheme_common.h"
 
@@ -21,4 +21,4 @@ const byte* String_get_raw(String str);
 bool String_is(String str, const char* cmp);
 bool String_cmp(String str, String other);
 
-#endif//MERIDIAN_STRING_H
+#endif//SCHEME_STRING_H
