@@ -19,6 +19,7 @@
               gperf
               clang-tools
               llvm_18
+              valgrind
             ];
           };
         }

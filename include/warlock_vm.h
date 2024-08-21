@@ -1,8 +1,8 @@
-#ifndef SCHEME_VM_H
-#define SCHEME_VM_H
+#ifndef WARLOCK_VM_H
+#define WARLOCK_VM_H
 
-#include "scheme_atom.h"
-#include "scheme_opcodes.h"
+#include "warlock_atom.h"
+#include "warlock_opcodes.h"
 
 typedef struct {
     Opcode *code;
@@ -25,4 +25,4 @@ void VM_run(VM* vm, Chunk* code);
 void VM_push(VM* vm, Atom atom);
 Atom VM_pop(VM* vm);
 
-#endif//SCHEME_VM_H
+#endif//WARLOCK_VM_H

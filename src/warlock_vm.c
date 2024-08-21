@@ -1,6 +1,6 @@
-#include "scheme_vm.h"
+#include "warlock_vm.h"
 
-#include "scheme_error.h"
+#include "warlock_error.h"
 
 #include <stdlib.h>
 
@@ -31,7 +31,7 @@ void VM_push(VM* vm, Atom atom) {
             vm->stack = temp;
         }
         else {
-            Scheme_error("VM_push realloc error");
+            Warlock_error("VM_push realloc error");
             return;
         }
     }

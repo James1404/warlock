@@ -1,7 +1,7 @@
-#ifndef SCHEME_OPCODES_H
-#define SCHEME_OPCODES_H
+#ifndef WARLOCK_OPCODES_H
+#define WARLOCK_OPCODES_H
 
-#include "scheme_string.h"
+#include "warlock_string.h"
 
 #define FOR_OPCODES(DO)\
     DO(OP_ADD)\
@@ -23,4 +23,4 @@ typedef enum {
 
 String Opcode_toString(Opcode op);
 
-#endif//SCHEME_OPCODES_H
+#endif//WARLOCK_OPCODES_H

@@ -1,5 +1,5 @@
-#ifndef SCHEME_COMMON_H
-#define SCHEME_COMMON_H
+#ifndef WARLOCK_COMMON_H
+#define WARLOCK_COMMON_H
 
 #include <stdbool.h>
 #include <string.h>
@@ -34,4 +34,4 @@ typedef size_t usize;
 #define I32_MAX LONG_MAX
 #define I64_MAX LLONG_MAX
 
-#endif//SCHEME_COMMON_H
+#endif//WARLOCK_COMMON_H

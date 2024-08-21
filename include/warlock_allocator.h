@@ -1,7 +1,7 @@
-#ifndef SCHEME_ALLOCATOR_H
-#define SCHEME_ALLOCATOR_H
+#ifndef WARLOCK_ALLOCATOR_H
+#define WARLOCK_ALLOCATOR_H
 
-#include "scheme_common.h"
+#include "warlock_common.h"
 
 typedef struct Chunk {
     u8* data;
@@ -29,4 +29,4 @@ void MainAllocator_free(void);
 
 void* MainAllocator_malloc(usize size);
 
-#endif//SCHEME_ALLOCATOR_H
+#endif//WARLOCK_ALLOCATOR_H

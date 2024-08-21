@@ -1,6 +1,9 @@
-#include "scheme_reader.h"
+#include "warlock_reader.h"
 
-#include "scheme_error.h"
+#include "warlock_atom.h"
+#include "warlock_builtins.h"
+#include "warlock_error.h"
+#include "warlock_string.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,7 +18,7 @@ static char Reader_current(Reader* reader) {
         return '\0';
     }
 
-    return String_index(reader->src, reader->position);
+    return STR_IDX(reader->src, reader->position);
 }
 
 static void Reader_advance(Reader* reader) {
@@ -113,9 +116,9 @@ static void Reader_SkipAllWhitespace(Reader* reader) {
     while(!Reader_eof(reader) && Reader_SkipWhitespace(reader));
 }
 
-static Atom Reader_ReadList(Reader* reader);
+static Sexp Reader_ReadList(Reader* reader, SexpAllocator* alloc);
 
-static Atom Reader_ReadSymbol(Reader* reader) {
+static Sexp Reader_ReadSymbol(Reader* reader, SexpAllocator* alloc) {
     Reader_SkipAllWhitespace(reader);
 
     char c = Reader_current(reader);
@@ -127,15 +130,15 @@ static Atom Reader_ReadSymbol(Reader* reader) {
             c = Reader_current(reader);
         }
 
-        String text = String_substr(reader->src, reader->start, reader->position - reader->start);
+        String text = STR_SUBSTR(reader->src, reader->start, reader->position - reader->start);
 
-        return ATOM_SYMBOL(text);
+        return ATOM_MAKE_V(alloc, ATOM_SYMBOL, text);
     }
 
-    return ATOM_NIL();
+    return ATOM_MAKE(alloc, ATOM_NIL);
 }
 
-static Atom Reader_ReadAtom(Reader* reader) {
+static Sexp Reader_ReadAtom(Reader* reader, SexpAllocator* alloc) {
     Reader_SkipAllWhitespace(reader);
 
     char c = Reader_current(reader);
@@ -143,20 +146,16 @@ static Atom Reader_ReadAtom(Reader* reader) {
 
     if(c == '\'') {
         Reader_advance(reader);
-        Atom atom = Reader_ReadAtom(reader);
-        Atom quote = ATOM_QUOTE(malloc(sizeof(Atom)));
-
-        memcpy(GET_ATOM_QUOTE(quote), &atom, sizeof(Atom));
-
-        return quote;
+        Sexp atom = Reader_ReadAtom(reader, alloc);
+        return ATOM_MAKE_V(alloc, ATOM_QUOTE, atom);;
     }
 
     if(c == '"') {
         do {
             Reader_advance(reader);
             if(Reader_eof(reader)) {
-                Scheme_error("Reached end-of-file without finding '\"' character");
-                return ATOM_NIL();
+                Warlock_error("Reached end-of-file without finding '\"' character");
+                return ATOM_MAKE(alloc, ATOM_NIL);
             }
         } while(Reader_current(reader) != '"');
 
@@ -165,76 +164,74 @@ static Atom Reader_ReadAtom(Reader* reader) {
 
         Reader_advance(reader);
 
-        String text = String_substr(reader->src, strStart, strLength);
-        return ATOM_STRING(text);
+        String text = STR_SUBSTR(reader->src, strStart, strLength);
+        return ATOM_MAKE_V(alloc, ATOM_STRING, text);
     }
     
     if(isNumber(c)) {
-        bool is_real = false;
         while(isNumber(c) || c == '.') {
-            if(c == '.') is_real = true;
             Reader_advance(reader);
             c = Reader_current(reader);
         }
 
-        String text = String_substr(reader->src, reader->start, reader->position - reader->start);
+        String text = STR_SUBSTR(reader->src, reader->start, reader->position - reader->start);
 
-        Atom value = {0};
-
-        if(is_real) {
-            value = ATOM_REAL(strtod(text.data, NULL));
-        }
-        else {
-            value = ATOM_INTEGER(strtoll(text.data, NULL, 0));
-        }
-
-        return value;
+        return ATOM_MAKE_V(alloc, ATOM_NUMBER, strtod(text.raw, NULL));
     }
 
     if(c == '(') {
-        return Reader_ReadList(reader);
+        return Reader_ReadList(reader, alloc);
     }
 
     if(isSymbolCharStart(c)) {
-        return Reader_ReadSymbol(reader);
+        return Reader_ReadSymbol(reader, alloc);
     }
 
     printf("Error invalid character [Line: %lu, Pos: %lu] :: '%02x'\n", reader->line, reader->line_pos, (unsigned char) c);
-    return ATOM_NIL();
+    return ATOM_MAKE(alloc, ATOM_NIL);
 }
 
-static Atom Reader_ReadList(Reader* reader) {
+static Sexp Reader_ReadList(Reader* reader, SexpAllocator* alloc) {
     Reader_SkipAllWhitespace(reader);
 
-    Atom list = ATOM_LIST();
+    Sexp start = ATOM_MAKE_S(alloc, ATOM_CONS, 0, ATOM_MAKE(alloc, ATOM_NIL));
+    Sexp current = start;
 
     if(Reader_match(reader, '(')) {
         while(!Reader_match(reader, ')')) {
             if(Reader_eof(reader)) {
-                Scheme_error("Reached end-of-file without finding ')' character");
-                return ATOM_NIL();
+                Warlock_error("Reached end-of-file without finding ')' character");
+                return ATOM_MAKE(alloc, ATOM_NIL);
             }
 
-            List_push(&GET_ATOM_LIST(list), Reader_ReadAtom(reader));
+            ATOM_VALUE(alloc, current, ATOM_CONS).data = Reader_ReadAtom(reader, alloc);
+            ATOM_VALUE(alloc, current, ATOM_CONS).next = ATOM_MAKE_S(alloc, ATOM_CONS, 0, ATOM_MAKE(alloc, ATOM_NIL));
+            current = Sexp_Rest(alloc, current);
+            
             Reader_SkipAllWhitespace(reader);
         }
     }
 
-    return list;
+    return start;
 }
 
-static Atom Reader_ReadTopLevel(Reader* reader) {
-    Atom list = ATOM_LIST();
+static Sexp Reader_ReadTopLevel(Reader* reader, SexpAllocator* alloc) {
+    Sexp start = ATOM_MAKE_S(alloc, ATOM_CONS, 0, ATOM_MAKE(alloc, ATOM_NIL));
+    Sexp current = start;
 
     while(!Reader_eof(reader)) {
-        List_push(&GET_ATOM_LIST(list), Reader_ReadAtom(reader));
+        ATOM_VALUE(alloc, current, ATOM_CONS).data = Reader_ReadAtom(reader, alloc);
+        ATOM_VALUE(alloc, current, ATOM_CONS).next = ATOM_MAKE_S(alloc, ATOM_CONS, 0, ATOM_MAKE(alloc, ATOM_NIL));
+
+        current = Sexp_Rest(alloc, current);
+        
         Reader_SkipAllWhitespace(reader);
     }
 
-    return list;
+    return start;
 }
 
-void Reader_run(Reader* reader) {
-    reader->global = Reader_ReadTopLevel(reader);
+void Reader_run(Reader* reader, SexpAllocator* alloc) {
+    reader->root = Reader_ReadTopLevel(reader, alloc);
 }
 

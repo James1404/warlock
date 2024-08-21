@@ -1,7 +1,7 @@
 CC = gcc
 CPP = g++
 
-EXE = scheme-c
+EXE = warlock
 
 SRC_DIR = src
 BUILD_DIR = build
@@ -15,11 +15,11 @@ INCLUDE = include\
 
 INCLUDE_DIRS := $(foreach dir,$(INCLUDE),-I$(dir))
 
-CCFLAGS = -Wall -pedantic -g -O2 -std=c99\
+CCFLAGS = -Wall -pedantic -g -O0 -std=c99\
 		  $(INCLUDE_DIRS)\
 	      `llvm-config --cflags`
 
-CPPFLAGS = -Wall -pedantic -g -O2 -std=c++20 $(INCLUDE_DIRS)
+CPPFLAGS = -Wall -pedantic -g -O0 -std=c++20 $(INCLUDE_DIRS)
 
 LDFLAGS =\
 	      `llvm-config --libs`
@@ -27,20 +27,25 @@ LDFLAGS =\
 SRC := $(shell find $(SRC_DIR)/ -type f \( -iname \*.c -o -iname \*.cpp \))
 OBJ := $(addprefix $(CACHE_DIR)/, $(addsuffix .o,$(basename $(notdir $(SRC)))))
 
+DEPS := $(OBJ:.o=.d)
+
 $(BUILD_DIR)/$(EXE): $(OBJ) | $(BUILD_DIR) $(CACHE_DIR) $(BUILD_DIR)/$(TEST_DIR) $(BUILD_DIR)/$(STD_DIR)
 	@echo Linking: $@
 	@$(CPP) -o $@ $^ $(LDFLAGS)
 
 run: $(BUILD_DIR)/$(EXE)
+	@echo Running: \"$(EXE)\"
 	@(cd $(BUILD_DIR) && ./$(EXE))
+
+-include $(DEPS)
 
 $(CACHE_DIR)/%.o: $(SRC_DIR)/%.c | $(CACHE_DIR)
 	@echo Building: $(notdir $<)
-	@$(CC) $(CCFLAGS) -c $< -o $@
+	@$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 $(CACHE_DIR)/%.o: $(SRC_DIR)/%.cpp | $(CACHE_DIR)
 	@echo Building: $(notdir $<)
-	@$(CPP) $(CPPFLAGS) -c $< -o $@
+	@$(CPP) $(CPPFLAGS) -MMD -MP -c $< -o $@
 
 $(BUILD_DIR):
 	@echo Making \'$@\' directory
