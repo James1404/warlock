@@ -220,7 +220,7 @@ Sexp Sexp_First(SexpAllocator *alloc, Sexp sexp) {
         return ATOM_VALUE(alloc, sexp, ATOM_CONS).data;
     }
     
-    return sexp;
+    return ATOM_MAKE_NIL(alloc);
 }
 
 Sexp Sexp_Rest(SexpAllocator *alloc, Sexp sexp) {
@@ -228,7 +228,7 @@ Sexp Sexp_Rest(SexpAllocator *alloc, Sexp sexp) {
         return ATOM_VALUE(alloc, sexp, ATOM_CONS).next;
     }
     
-    return sexp;
+    return ATOM_MAKE_NIL(alloc);
 }
 
 Sexp Sexp_Len(SexpAllocator* alloc, Sexp sexp) {

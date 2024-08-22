@@ -188,6 +188,6 @@ void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp) {
 }
 
 bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp) {
-    Sexp f = Sexp_First(alloc, sexp);
-    return ATOM_TY(alloc, f) == ATOM_NIL;
+    Sexp next = Sexp_Rest(alloc, sexp);
+    return ATOM_TY(alloc, next) == ATOM_NIL;
 }

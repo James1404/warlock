@@ -74,6 +74,8 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
         }
     }
 
+    // TODO: only seems to run a single line in the code;
+
     Sexp current = sexp;
 
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
@@ -196,6 +198,7 @@ Sexp Eval_Lambda(SexpAllocator* alloc, Sexp sexp) {
     Sexp body = Sexp_First(alloc, sexp);
 
     Sexp current = args;
+    
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp arg = Sexp_First(alloc, current);
         if(ATOM_TY(alloc, arg) != ATOM_SYMBOL) {
