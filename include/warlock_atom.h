@@ -5,13 +5,14 @@
 #include "warlock_string.h"
 
 typedef u64 Sexp;
+typedef struct SexpAllocator SexpAllocator;
 
 typedef struct {
     Sexp args;
     Sexp body;
 } Fn;
 
-typedef Sexp (*IntrinsicFn)(Sexp args);
+typedef Sexp (*IntrinsicFn)(SexpAllocator* alloc, Sexp args);
 typedef struct {
     const char* name;
     IntrinsicFn fn;
@@ -62,15 +63,17 @@ typedef struct {
     Sexp sexp;
 } Local;
 
-typedef struct {
+struct SexpAllocator {
     u64 len, allocated;
     Atom* data;
     
     u64 scope;
 
+    Sexp nil;
+
     u64 localsLen, localsAllocated;
     Local* locals;
-} SexpAllocator;
+};
 
 SexpAllocator SexpAllocator_make(void);
 void SexpAllocator_free(SexpAllocator* alloc);
@@ -86,15 +89,19 @@ Sexp SexpAllocator_getLocal(SexpAllocator *alloc, String name);
 String SexpAllocator_toString(SexpAllocator *alloc, Sexp node);
 void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp);
 
-#define ATOM_GET(allocator, idx) ((allocator)->data + idx)
-#define ATOM_TY(allocator, idx) (ATOM_GET(allocator, idx)->ty)
-#define ATOM_VALUE(allocator, idx, ty) (ATOM_GET(allocator, idx)->as.ty)
+bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
 
-#define ATOM_MAKE(allocator, ty)                                              \
-  (SexpAllocator_alloc(allocator, (Atom){ty, {0}}))
+#define ATOM_GET(allocator, idx) ((allocator)->data + idx)
+#define ATOM_TY(allocator, idx) (ATOM_GET((allocator), idx)->ty)
+#define ATOM_VALUE(allocator, idx, ty) (ATOM_GET((allocator), idx)->as.ty)
+
+#define ATOM_MAKE(allocator, ty)                                               \
+  (SexpAllocator_alloc((allocator), (Atom){ty, {0}}))
 #define ATOM_MAKE_V(allocator, ty, value)                                      \
-  (SexpAllocator_alloc(allocator, (Atom){ty, {.ty = value}}))
+  (SexpAllocator_alloc((allocator), (Atom){ty, {.ty = value}}))
 #define ATOM_MAKE_S(allocator, ty, ...)                                        \
-    (SexpAllocator_alloc(allocator, (Atom){ty, {.ty = {__VA_ARGS__}}}))
+  (SexpAllocator_alloc((allocator), (Atom){ty, {.ty = {__VA_ARGS__}}}))
+
+#define ATOM_MAKE_NIL(allocator) ((allocator)->nil)
 
 #endif//WARLOCK_ATOM_H

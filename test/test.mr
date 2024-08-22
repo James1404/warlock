@@ -1,1 +1,3 @@
-(+ 25)
+(define x (+ 5 2))
+
+(println x)

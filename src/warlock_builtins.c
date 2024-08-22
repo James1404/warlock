@@ -16,7 +16,7 @@ Sexp Sexp_Add(SexpAllocator *alloc, Sexp sexp) {
 
     Sexp current = sexp;
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
         ATOM_VALUE(alloc, result, ATOM_NUMBER) += ATOM_VALUE(alloc, data, ATOM_NUMBER);
 
@@ -34,7 +34,7 @@ Sexp Sexp_Subtract(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(alloc, current, ATOM_CONS).data;
         ATOM_VALUE(alloc, result, ATOM_NUMBER) -= ATOM_VALUE(alloc, data, ATOM_NUMBER);
         
@@ -52,7 +52,7 @@ Sexp Sexp_Multiply(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(alloc, current, ATOM_CONS).data;
         ATOM_VALUE(alloc, result, ATOM_NUMBER) *= ATOM_VALUE(alloc, data, ATOM_NUMBER);
         
@@ -70,7 +70,7 @@ Sexp Sexp_Divide(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(alloc, current, ATOM_CONS).data;
         ATOM_VALUE(alloc, result, ATOM_NUMBER) /= ATOM_VALUE(alloc, data, ATOM_NUMBER);
         
@@ -174,7 +174,7 @@ Sexp Sexp_And(SexpAllocator *alloc, Sexp sexp) {
 
     Sexp current = sexp;
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
         result = result && ATOM_VALUE(alloc, data, ATOM_BOOLEAN);
@@ -190,7 +190,7 @@ Sexp Sexp_Or(SexpAllocator *alloc, Sexp sexp) {
 
     Sexp current = sexp;
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
         result = result && ATOM_VALUE(alloc, data, ATOM_BOOLEAN);
@@ -204,7 +204,7 @@ Sexp Sexp_Or(SexpAllocator *alloc, Sexp sexp) {
 Sexp Sexp_Println(SexpAllocator *alloc, Sexp sexp) {
     Sexp current = sexp;
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
         SexpAllocator_print(alloc, data);
@@ -236,7 +236,7 @@ Sexp Sexp_Len(SexpAllocator* alloc, Sexp sexp) {
 
     Sexp current = sexp;
 
-    while(ATOM_TY(alloc, sexp) != ATOM_NIL) {
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
         ATOM_VALUE(alloc, result, ATOM_NUMBER) += 1.0f;
         current = ATOM_VALUE(alloc, current, ATOM_CONS).next;
     }

@@ -10,7 +10,7 @@
 #define PRINT_WHERE() printf("AT := %s\n", __func__)
 
 SexpAllocator SexpAllocator_make(void) {
-    return (SexpAllocator) {
+    SexpAllocator result = {
         .len = 0,
         .allocated = 0,
         .data = NULL,
@@ -18,7 +18,13 @@ SexpAllocator SexpAllocator_make(void) {
         .localsLen = 0,
         .localsAllocated = 0,
         .locals = NULL,
+
+        .nil = 0,
     };
+
+    result.nil = ATOM_MAKE(&result, ATOM_NIL);
+
+    return result;
 }
 
 void SexpAllocator_free(SexpAllocator* alloc) {
@@ -181,3 +187,7 @@ void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp) {
     }
 }
 
+bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp) {
+    Sexp f = Sexp_First(alloc, sexp);
+    return ATOM_TY(alloc, f) == ATOM_NIL;
+}

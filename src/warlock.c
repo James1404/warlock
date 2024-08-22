@@ -1,6 +1,5 @@
 #include "warlock.h"
 
-#include "warlock_allocator.h"
 #include "warlock_atom.h"
 #include "warlock_common.h"
 #include "warlock_error.h"
@@ -14,17 +13,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
-void Warlock_init(void) {
-    MainAllocator_init();
-}
-
-void Warlock_free(void) { MainAllocator_free(); }
-
-static void RegisterIntrinsic(SexpAllocator* alloc, char* name, IntrinsicFn fn, i64 argc) {
-    Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, fn, argc);
-    SexpAllocator_setLocal(alloc, STR(name), sexp);
-}
 
 #define INTRINSIC(alloc, name, fn, argc)                                \
     do {                                                                \
@@ -97,10 +85,17 @@ void Warlock_run_file(SexpAllocator* alloc, String path) {
     u64 len = ftell(file);
 
     fseek(file, 0, SEEK_SET);
-    char* buffer = MainAllocator_malloc(len);
+    char* buffer = malloc(len);
 
-    fread(buffer, 1, len, file);
+    if(fread(buffer, 1, len, file) != len) {
+        Warlock_error("Failed to read file '%.*s'", path.len, path.raw);
+        fclose(file);
+        return;
+    }
+    
     fclose(file);
 
     Warlock_run(alloc, (String) { buffer, len });
+
+    free(buffer);
 }
