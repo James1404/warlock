@@ -14,13 +14,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define INTRINSIC(alloc, name, fn, argc)                                \
-    do {                                                                \
-    Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);   \
-    SexpAllocator_setLocal(alloc, STR(name), sexp);                     \
-    } while(0);
-
-#define GLOBAL(alloc, name, value) SexpAllocator_setLocal(alloc, STR(name), value)
 /*
 Atom warlock_concat(List args) {
     Atom arg = args.data[0];
@@ -60,17 +53,19 @@ void Warlock_builtin(SexpAllocator* alloc) {
     INTRINSIC(alloc, "rest", Sexp_Rest, 1);
 }
 
-void Warlock_run(SexpAllocator* alloc, String src) {
+Sexp Warlock_run(SexpAllocator* alloc, String src) {
     Reader reader = Reader_make(src);
 
     Reader_run(&reader, alloc);
 
-    Eval_run(alloc, reader.root);
+    Sexp result = Eval_run(alloc, reader.root);
 
     Reader_free(&reader);
+
+    return result;
 }
 
-void Warlock_run_file(SexpAllocator* alloc, String path) {
+Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
     String nullterminated;
     STR_CPY_ALLOC_NULL(nullterminated, path);
     
@@ -78,7 +73,7 @@ void Warlock_run_file(SexpAllocator* alloc, String path) {
 
     if(!file) {
         Warlock_error("Could not find file '%.*s'", path.len, path.raw);
-        return;
+        return ATOM_MAKE_NIL(alloc);
     }
 
     fseek(file, 0, SEEK_END);
@@ -90,12 +85,14 @@ void Warlock_run_file(SexpAllocator* alloc, String path) {
     if(fread(buffer, 1, len, file) != len) {
         Warlock_error("Failed to read file '%.*s'", path.len, path.raw);
         fclose(file);
-        return;
+        return ATOM_MAKE_NIL(alloc);
     }
     
     fclose(file);
 
-    Warlock_run(alloc, (String) { buffer, len });
+    Sexp result = Warlock_run(alloc, (String) { buffer, len });
 
     free(buffer);
+
+    return result;
 }

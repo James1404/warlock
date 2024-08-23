@@ -6,8 +6,6 @@
 static bool found = false;
 
 void Warlock_info(const char *format, ...) {
-    found = true;
-    
     va_list args;
     va_start(args, format);
 
@@ -21,8 +19,6 @@ void Warlock_info(const char *format, ...) {
 }
 
 void Warlock_warning(const char *format, ...) {
-    found = true;
-    
     va_list args;
     va_start(args, format);
 

@@ -104,4 +104,12 @@ bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
 
 #define ATOM_MAKE_NIL(allocator) ((allocator)->nil)
 
+#define INTRINSIC(alloc, name, fn, argc)                                \
+    do {                                                                \
+    Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);   \
+    SexpAllocator_setLocal(alloc, STR(name), sexp);                     \
+    } while(0);
+
+#define GLOBAL(alloc, name, value) SexpAllocator_setLocal(alloc, STR(name), value)
+
 #endif//WARLOCK_ATOM_H

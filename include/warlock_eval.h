@@ -3,7 +3,7 @@
 
 #include "warlock_atom.h"
 
-void Eval_run(SexpAllocator* alloc, Sexp sexp);
+Sexp Eval_run(SexpAllocator* alloc, Sexp sexp);
 
 bool Eval_match(SexpAllocator* alloc, Sexp sexp, const char* expected);
 

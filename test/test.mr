@@ -1,1 +1,3 @@
-(println 'name)
+(println 5)
+(println 5)
+(println 5)

@@ -5,7 +5,7 @@
 #include "warlock_string.h"
 
 void Warlock_builtin(SexpAllocator* alloc);
-void Warlock_run(SexpAllocator* alloc, String src);
-void Warlock_run_file(SexpAllocator* alloc, String path);
+Sexp Warlock_run(SexpAllocator* alloc, String src);
+Sexp Warlock_run_file(SexpAllocator* alloc, String path);
 
 #endif//WARLOCK_H

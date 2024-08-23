@@ -4,6 +4,8 @@
 #include "warlock_error.h"
 #include "warlock_eval.h"
 
+#include <stdio.h>
+
 #define EXPECTED_TYPE(sexp, expected)                                   \
     if (ATOM_TY(alloc, sexp) != expected) {                             \
     Warlock_error("Expected '%s'", #expected);                          \
@@ -208,11 +210,14 @@ Sexp Sexp_Println(SexpAllocator *alloc, Sexp sexp) {
         Sexp data = Sexp_First(alloc, current);
 
         SexpAllocator_print(alloc, data);
+        printf(" ");
 
         current = Sexp_Rest(alloc, current);
     }
+    
+    printf("\n");
 
-    return ATOM_MAKE(alloc, ATOM_NIL);
+    return ATOM_MAKE_NIL(alloc);
 }
 
 Sexp Sexp_First(SexpAllocator *alloc, Sexp sexp) {
