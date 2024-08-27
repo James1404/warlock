@@ -225,7 +225,7 @@ Sexp Sexp_First(SexpAllocator *alloc, Sexp sexp) {
         return ATOM_VALUE(alloc, sexp, ATOM_CONS).data;
     }
     
-    return ATOM_MAKE_NIL(alloc);
+    return sexp;
 }
 
 Sexp Sexp_Rest(SexpAllocator *alloc, Sexp sexp) {

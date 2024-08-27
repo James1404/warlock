@@ -4,7 +4,7 @@
 #include "warlock_builtins.h"
 
 #include <stdio.h>
-
+/*
 #define REPL_LEN 256
 
 static bool running = true;
@@ -16,20 +16,21 @@ Sexp REPL_Quit(SexpAllocator* alloc, Sexp sexp) {
 
 int main(int argc, char** argv) {
     SexpAllocator allocator = SexpAllocator_make();
-    
+
     Warlock_builtin(&allocator);
 
     if(argc <= 1) {
         INTRINSIC(&allocator, "quit", REPL_Quit, 0);
-        
+
         while(running) {
-            printf("USER > ");
+            printf("* ");
             char string[REPL_LEN];
             if(!fgets(string, REPL_LEN, stdin)) {
                 Warlock_error("fgets failed");
             }
 
-            Sexp result = Warlock_run(&allocator, (String) { string, strlen(string) });
+            Sexp result = Warlock_run(&allocator, (String) { string,
+strlen(string) });
 
             SexpAllocator_print(&allocator, result);
             printf("\n");
@@ -39,7 +40,8 @@ int main(int argc, char** argv) {
         String str = { argv[1], strlen(argv[1]) };
         Warlock_run_file(&allocator, str);
     }
-    
 
     SexpAllocator_free(&allocator);
 }
+
+*/

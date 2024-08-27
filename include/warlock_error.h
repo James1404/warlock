@@ -7,6 +7,6 @@ void Warlock_info(const char *fmt, ...);
 void Warlock_warning(const char *fmt, ...);
 void Warlock_error(const char *fmt, ...);
 
-bool Warlock_errorFound(void);
+bool Warlock_foundError(void);
 
 #endif//WARLOCK_ERROR_H

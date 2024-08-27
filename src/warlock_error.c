@@ -46,5 +46,5 @@ void Warlock_error(const char *format, ...) {
     va_end(args);
 }
 
-bool Warlock_errorFound(void) { return found; }
+bool Warlock_foundError(void) { return found; }
 

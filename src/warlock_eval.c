@@ -4,9 +4,6 @@
 #include "warlock_error.h"
 #include "warlock_string.h"
 
-#include <stdlib.h>
-#include <string.h>
-
 Sexp Eval_run(SexpAllocator* alloc, Sexp sexp) {
     return Eval_Atom(alloc, sexp);
 }
@@ -79,7 +76,6 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
     Sexp current = sexp;
 
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
-        Warlock_info("eval cons element");
         Sexp data = Sexp_First(alloc, current);
         ATOM_VALUE(alloc, current, ATOM_CONS).data = Eval_Atom(alloc, data);
         current = Sexp_Rest(alloc, current);

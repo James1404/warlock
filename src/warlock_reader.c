@@ -144,6 +144,12 @@ static Sexp Reader_ReadAtom(Reader* reader, SexpAllocator* alloc) {
     char c = Reader_current(reader);
     reader->start = reader->position;
 
+    if(c == ')') {
+        Warlock_error("Unexpected closing parenthesis ')'");
+        Reader_advance(reader);
+        return ATOM_MAKE_NIL(alloc);
+    }
+
     if(c == '\'') {
         Reader_advance(reader);
         Sexp atom = Reader_ReadAtom(reader, alloc);

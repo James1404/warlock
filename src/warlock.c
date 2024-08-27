@@ -8,9 +8,6 @@
 #include "warlock_builtins.h"
 #include "warlock_string.h"
 
-#include <llvm-c/Types.h>
-#include <llvm-c/Core.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -57,14 +54,18 @@ Sexp Warlock_run(SexpAllocator* alloc, String src) {
     Reader reader = Reader_make(src);
 
     Reader_run(&reader, alloc);
+ 
+    if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
 
     Sexp result = Eval_run(alloc, reader.root);
+
+    if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
 
     Reader_free(&reader);
 
     return result;
 }
-
+/*
 Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
     String nullterminated;
     STR_CPY_ALLOC_NULL(nullterminated, path);
@@ -96,3 +97,4 @@ Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
 
     return result;
 }
+*/

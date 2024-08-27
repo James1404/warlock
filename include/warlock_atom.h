@@ -106,7 +106,7 @@ bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
 
 #define INTRINSIC(alloc, name, fn, argc)                                \
     do {                                                                \
-    Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);   \
+    Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);    \
     SexpAllocator_setLocal(alloc, STR(name), sexp);                     \
     } while(0);
 
