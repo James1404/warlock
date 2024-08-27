@@ -4,7 +4,7 @@
 #include "warlock_builtins.h"
 
 #include <stdio.h>
-/*
+
 #define REPL_LEN 256
 
 static bool running = true;
@@ -44,4 +44,3 @@ strlen(string) });
     SexpAllocator_free(&allocator);
 }
 
-*/

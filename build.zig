@@ -8,34 +8,8 @@ pub fn build(b: *std.Build) !void {
         .name = "warlock",
         .target = target,
         .optimize = optimize,
-        .root_source_file = b.path("src/warlock_binary.zig"),
-        .link_libc = true,
+        .root_source_file = b.path("src/main.zig"),
     });
-
-    exe.addCSourceFiles(.{ .flags = &.{"-std=c99"}, .files = &.{
-        "src/warlock.c",
-        "src/warlock_binary.c",
-        "src/warlock_allocator.c",
-        "src/warlock_atom.c",
-        "src/warlock_builtins.c",
-        "src/warlock_reader.c",
-        "src/warlock_eval.c",
-        "src/warlock_opcodes.c",
-        "src/warlock_vm.c",
-        "src/warlock_error.c",
-        "src/warlock_string.c",
-    } });
-
-    // var srcDir = try std.fs.cwd().openDir("src", .{ .iterate = true });
-    // defer srcDir.close();
-
-    // var srcIterator = srcDir.iterate();
-    // while (try srcIterator.next()) |file| {
-    //     if (file.kind != .file) continue;
-    //     std.debug.print("{s}\n", .{file.name});
-    //}
-
-    exe.addIncludePath(.{ .cwd_relative = "include" });
 
     b.installArtifact(exe);
 

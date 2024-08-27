@@ -65,7 +65,7 @@ Sexp Warlock_run(SexpAllocator* alloc, String src) {
 
     return result;
 }
-/*
+
 Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
     String nullterminated;
     STR_CPY_ALLOC_NULL(nullterminated, path);
@@ -97,4 +97,4 @@ Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
 
     return result;
 }
-*/
+
