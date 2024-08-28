@@ -2,15 +2,22 @@ const std = @import("std");
 
 const Ctx = @import("context.zig");
 const Sexp = @import("atom.zig").Sexp;
+const Reader = @import("reader.zig");
+const Eval = @import("eval.zig");
 
-fn runFile(allocator: std.mem.Allocator, ctx: Ctx, path: []u8) !Sexp {
+fn runFile(allocator: std.mem.Allocator, ctx: *Ctx, path: []const u8) !Sexp {
     const buffer = try std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize));
     defer allocator.free(buffer);
 
     return run(allocator, ctx, buffer);
 }
 
-fn run(allocator: std.mem.Allocator, ctx: Ctx, src: []u8) !Sexp {}
+fn run(_: std.mem.Allocator, ctx: *Ctx, src: []const u8) !Sexp {
+    var reader = Reader.make(src);
+    const root = try reader.run(ctx);
+
+    return try Eval.run(ctx, root);
+}
 
 var running = true;
 
@@ -19,19 +26,24 @@ fn REPL_Quit(ctx: *Ctx, _: Sexp) Sexp {
     return ctx.nil;
 }
 
+fn registerBuiltins(_: *Ctx) void {}
+
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    var alloactor = gpa.allocator();
-    defer gpa.deinit();
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
 
-    var ctx = Ctx.make();
+    var ctx = try Ctx.make(allocator);
     defer ctx.free();
 
     const stdout = std.io.getStdOut().writer();
     const stdin = std.io.getStdIn().reader();
     _ = stdin;
 
-    c.Warlock_builtin(&allocator);
+    registerBuiltins(&ctx);
+
+    const root = try runFile(allocator, &ctx, "test/test.mr");
+    try ctx.prettyPrint(stdout, root);
 
     while (running) {
         try stdout.print("* ", .{});

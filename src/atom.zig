@@ -1,5 +1,7 @@
-const IntrinsicFn = fn (*SexpAllocator, Sexp) Sexp;
-const Sexp = u64;
+const Ctx = @import("context.zig");
+
+pub const IntrinsicFn = *const fn (*Ctx, Sexp) Sexp;
+pub const Sexp = u64;
 
 payload: union(enum) {
     Number: f64,
@@ -15,9 +17,6 @@ payload: union(enum) {
         name: []u8,
         func: IntrinsicFn,
         argc: i64,
-    },
-    FFI: struct {
-        ptr: anyopaque,
     },
     Cons: struct {
         data: Sexp,
