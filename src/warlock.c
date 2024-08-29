@@ -48,6 +48,11 @@ void Warlock_builtin(SexpAllocator* alloc) {
 
     INTRINSIC(alloc, "first", Sexp_First, 1);
     INTRINSIC(alloc, "rest", Sexp_Rest, 1);
+
+    INTRINSIC(alloc, "quote", Sexp_Rest, 1);
+    INTRINSIC(alloc, "define", Sexp_Rest, 2);
+    INTRINSIC(alloc, "if", Sexp_Rest, 3);
+    INTRINSIC(alloc, "lambda", Sexp_Rest, 2);
 }
 
 Sexp Warlock_run(SexpAllocator* alloc, String src) {

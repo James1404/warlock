@@ -34,7 +34,7 @@ void SexpAllocator_free(SexpAllocator* alloc) {
 
 Sexp SexpAllocator_alloc(SexpAllocator* alloc, Atom atom) {
     if(!alloc->data) {
-        alloc->allocated = 8;
+        alloc->allocated = 100;
         alloc->data = malloc(sizeof(Atom)*alloc->allocated);
     }
 
@@ -44,7 +44,13 @@ Sexp SexpAllocator_alloc(SexpAllocator* alloc, Atom atom) {
 
     if(alloc->len >= alloc->allocated) {
         alloc->allocated *= 2;
-        alloc->data = realloc(alloc->data, sizeof(Atom)*alloc->allocated);
+        Atom* temp = realloc(alloc->data, sizeof(Atom)*alloc->allocated);
+        if(temp) {
+            alloc->data = temp;
+        }
+        else {
+            Warlock_error("Failed to realloc in %s", __func__);
+        }
     }
 
     return sexp;
@@ -188,6 +194,5 @@ void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp) {
 }
 
 bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp) {
-    Sexp next = Sexp_Rest(alloc, sexp);
-    return ATOM_TY(alloc, next) == ATOM_NIL;
+    return ATOM_TY(alloc, sexp) == ATOM_NIL;
 }

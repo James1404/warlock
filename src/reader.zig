@@ -1,7 +1,8 @@
 const std = @import("std");
-const Atom = @import("atom.zig");
-const Sexp = Atom.Sexp;
+
 const Ctx = @import("context.zig");
+const Sexp = Ctx.Sexp;
+const Messages = @import("messages.zig");
 
 src: []const u8,
 start: u64,
@@ -10,6 +11,12 @@ line: u64,
 line_offset: u64,
 
 const Self = @This();
+
+const ReaderError = error{
+    UnexpectedCharacter,
+    InvalidCharacter,
+    EndOfFile,
+};
 
 pub fn make(src: []const u8) Self {
     return .{
@@ -62,7 +69,7 @@ fn isSymbolCharStart(c: u8) bool {
 }
 
 fn isSymbolCharMiddle(c: u8) bool {
-    return isSymbolCharStart(c) || std.ascii.isDigit(c);
+    return isSymbolCharStart(c) or std.ascii.isDigit(c);
 }
 
 fn skipWhiteSpace(self: *Self) bool {
@@ -96,7 +103,13 @@ fn skipAllWhitespace(self: *Self) void {
 fn readList(self: *Self, ctx: *Ctx) !Sexp {
     self.skipAllWhitespace();
 
-    const start = try ctx.alloc(.{ .payload = .{ .Cons = .{ ctx.nil, ctx.nil } } });
+    const start = try ctx.alloc(.{
+        .Cons = .{
+            .data = try ctx.alloc(.Nil),
+            .next = try ctx.alloc(.Nil),
+        },
+    });
+
     var crnt = start;
 
     if (self.match('(')) {
@@ -106,10 +119,21 @@ fn readList(self: *Self, ctx: *Ctx) !Sexp {
                 return ctx.nil;
             }
 
-            crnt.payload.Cons.data = self.readAtom(ctx);
-            crnt.payload.Cons.next = try ctx.alloc(.{ .payload = .{ .Cons = .{ ctx.nil, ctx.nil } } });
-            crnt = crnt.payload.Cons.next;
-            self.skipAllWhitespace();
+            switch (ctx.getr(crnt).*) {
+                .Cons => |*cons| {
+                    cons.*.data = try self.readAtom(ctx);
+                    cons.*.next = try ctx.alloc(.{
+                        .Cons = .{
+                            .data = try ctx.alloc(.Nil),
+                            .next = try ctx.alloc(.Nil),
+                        },
+                    });
+
+                    crnt = cons.next;
+                    self.skipAllWhitespace();
+                },
+                else => break,
+            }
         }
     }
 
@@ -119,41 +143,70 @@ fn readList(self: *Self, ctx: *Ctx) !Sexp {
 fn readSymbol(self: *Self, ctx: *Ctx) !Sexp {
     self.skipAllWhitespace();
 
-    var c = self.current();
+    var c = self.current().?;
     self.start = self.pos;
 
     if (isSymbolCharStart(c)) {
         while (isSymbolCharMiddle(c)) {
             self.advance();
-            c = self.current();
+            c = self.current().?;
         }
 
-        const text = self.src[self.start..self.current];
-        return ctx.alloc(.{ .payload = .String{text} });
+        const text = self.src[self.start..self.pos];
+        return ctx.alloc(.{ .String = text });
     }
 
     return ctx.nil;
 }
 
 fn readAtom(self: *Self, ctx: *Ctx) !Sexp {
-    _ = self;
-    return ctx.nil;
+    self.skipAllWhitespace();
+
+    const c = self.current().?;
+
+    self.start = self.pos;
+
+    if (c == ')') {
+        try Messages.err("Unexpected character '{c}'", .{c});
+        self.advance();
+        return ReaderError.UnexpectedCharacter;
+    }
+
+    if (c == '\'') {
+        self.advance();
+        const atom = try self.readAtom(ctx);
+        return ctx.alloc(.{ .Quote = atom });
+    }
+
+    if (c == '(') {
+        return self.readList(ctx);
+    }
+
+    if (isSymbolCharStart(c)) {
+        return self.readSymbol(ctx);
+    }
+
+    try Messages.err("Invalid charater '{c}'", .{c});
+    return ReaderError.UnexpectedCharacter;
 }
 
 fn readTopLevel(self: *Self, ctx: *Ctx) !Sexp {
     const start = try ctx.alloc(.{
-        .payload = .{ .Cons = .{ .data = ctx.nil, .next = ctx.nil } },
+        .Cons = .{ .data = ctx.nil, .next = ctx.nil },
     });
     var crnt = start;
 
     while (!self.eof()) {
-        if (ctx.get(crnt).payload == .Cons) {
-            ctx.get(crnt).payload.Cons.data = try self.readAtom(ctx);
-            ctx.get(crnt).payload.Cons.data = try ctx.alloc(.{ .payload = .{ .Cons = .{ .data = ctx.nil, .next = ctx.nil } } });
-            crnt = ctx.get(crnt).payload.Cons.next;
-        }
+        switch (ctx.get(crnt)) {
+            .Cons => |cons| {
+                ctx.set(cons.data, try self.readAtom(ctx));
+                ctx.set(cons.data, try ctx.alloc(.{ .Cons = .{ .data = ctx.nil, .next = ctx.nil } }));
+                crnt = ctx.get(crnt).Cons.next;
 
-        self.skipAllWhitespace();
+                self.skipAllWhitespace();
+            },
+            else => {},
+        }
     }
 
     return start;

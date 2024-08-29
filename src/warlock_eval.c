@@ -30,51 +30,10 @@ Sexp Eval_Atom(SexpAllocator* alloc, Sexp sexp) {
     return ATOM_MAKE_NIL(alloc);
 }
 
-Sexp Eval_Quote(SexpAllocator* alloc, Sexp sexp) {
-    if(ATOM_TY(alloc, sexp) != ATOM_CONS) return ATOM_MAKE_NIL(alloc);
-
-    Cons cons = ATOM_VALUE(alloc, sexp, ATOM_CONS);
-
-    if(!Eval_match(alloc, cons.data, "quote")) {
-        return ATOM_MAKE_NIL(alloc);
-    }
-
-    if(ATOM_TY(alloc, cons.next) != ATOM_CONS) {
-        return ATOM_MAKE_NIL(alloc);
-    }
-
-    cons = ATOM_VALUE(alloc, cons.next, ATOM_CONS);
-
-    return ATOM_MAKE_V(alloc, ATOM_QUOTE, cons.data);
-}
-
 Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
     if(ATOM_TY(alloc, sexp) != ATOM_CONS) return ATOM_MAKE_NIL(alloc);
     
-    Sexp predicate = ATOM_VALUE(alloc, sexp, ATOM_CONS).data;
-
-    if(ATOM_TY(alloc, predicate) == ATOM_SYMBOL) {
-        if(STR_CMP_WITH_RAW(ATOM_VALUE(alloc, predicate, ATOM_SYMBOL), "quote")) {
-            return Eval_Quote(alloc, sexp);
-        }
-
-        if(STR_CMP_WITH_RAW(ATOM_VALUE(alloc, predicate, ATOM_SYMBOL), "define")) {
-            return Eval_Define(alloc, sexp);
-        }
-
-        if(STR_CMP_WITH_RAW(ATOM_VALUE(alloc, predicate, ATOM_SYMBOL), "if")) {
-            return Eval_If(alloc, sexp);
-        }
-
-        if(STR_CMP_WITH_RAW(ATOM_VALUE(alloc, predicate, ATOM_SYMBOL), "lambda")) {
-            return Eval_Lambda(alloc, sexp);
-        }
-    }
-
-    // TODO: only seems to run a single line in the code;
-
     Sexp current = sexp;
-
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
         ATOM_VALUE(alloc, current, ATOM_CONS).data = Eval_Atom(alloc, data);
@@ -86,9 +45,10 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
         Sexp args = Sexp_Rest(alloc, sexp);
         Intrinsic intrinsic = ATOM_VALUE(alloc, fn, ATOM_INTRINSIC);
 
-        i64 len = Sexp_Len(alloc, args);
+        Sexp lenSexp = Sexp_Len(alloc, args);
+        f64 len = ATOM_VALUE(alloc, lenSexp, ATOM_NUMBER);
 
-        if((len == intrinsic.argc) || (intrinsic.argc == -1 && len > 0)) {
+        if(len == intrinsic.argc || (intrinsic.argc == -1 && len > 0)) {
             return intrinsic.fn(alloc, args);
         }
 
@@ -144,66 +104,3 @@ bool Eval_match(SexpAllocator* alloc, Sexp sexp, const char* expected) {
     return false;
 }
 
-Sexp Eval_Define(SexpAllocator* alloc, Sexp sexp) {
-    Sexp predicate = Sexp_First(alloc, sexp);
-
-    if(Eval_match(alloc, predicate, "define")) {
-        sexp = Sexp_Rest(alloc, sexp);
-
-        Sexp symbol = Sexp_First(alloc, sexp);
-        if(ATOM_TY(alloc, symbol) == ATOM_SYMBOL) {
-            sexp = Sexp_Rest(alloc, sexp);
-
-            Sexp value = Sexp_First(alloc, sexp);
-            SexpAllocator_setLocal(alloc, ATOM_VALUE(alloc, symbol, ATOM_SYMBOL), value);
-        }
-    }
-
-    return ATOM_MAKE_NIL(alloc);
-}
-
-Sexp Eval_If(SexpAllocator* alloc, Sexp sexp) {
-    Sexp predicate = Sexp_First(alloc, sexp);
-        
-    if(!Eval_match(alloc, predicate, "if")) {
-        return ATOM_MAKE_NIL(alloc);
-    }
-
-    sexp = Sexp_Rest(alloc, sexp);
-
-    Sexp cond = Eval_Atom(alloc, Sexp_First(alloc, sexp));
-    if(ATOM_TY(alloc, cond) != ATOM_BOOLEAN) {
-        Warlock_error("condition must be a boolean");
-        return ATOM_MAKE_NIL(alloc);
-    }
-
-    sexp = Sexp_Rest(alloc, sexp);
-    Sexp t = Sexp_First(alloc, sexp);
-    sexp = Sexp_Rest(alloc, sexp);
-    Sexp f = Sexp_First(alloc, sexp);
-
-    return Eval_Atom(alloc, ATOM_VALUE(alloc, cond, ATOM_BOOLEAN) ? t : f);
-}
-
-Sexp Eval_Lambda(SexpAllocator* alloc, Sexp sexp) {
-    Sexp predicate = Sexp_First(alloc, sexp);
-    if(!Eval_match(alloc, predicate, "lambda")) return ATOM_MAKE_NIL(alloc);
-
-    sexp = Sexp_Rest(alloc, sexp);
-    Sexp args = Sexp_First(alloc, sexp);
-    sexp = Sexp_Rest(alloc, sexp);
-    Sexp body = Sexp_First(alloc, sexp);
-
-    Sexp current = args;
-    
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
-        Sexp arg = Sexp_First(alloc, current);
-        if(ATOM_TY(alloc, arg) != ATOM_SYMBOL) {
-            Warlock_error("function parameters must all be symbols");
-            return ATOM_MAKE_NIL(alloc);
-        }
-        current = Sexp_Rest(alloc, current);
-    }
-
-    return ATOM_MAKE_S(alloc, ATOM_FN, args, body);
-}

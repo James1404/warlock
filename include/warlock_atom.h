@@ -92,6 +92,22 @@ void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp);
 bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
 
 #define ATOM_GET(allocator, idx) ((allocator)->data + idx)
+
+#define ATOM_SET(allocator, idx, ty)                                           \
+  *ATOM_GET(alloc, idx) = (Atom) {                                             \
+    ty, { 0 }                                                                  \
+  }
+#define ATOM_SET_V(allocator, idx, ty, value)                                  \
+  *ATOM_GET(alloc, idx) = (Atom) {                                             \
+    ty, { .ty = value }                                                        \
+  }
+#define ATOM_SET_S(allocator, idx, ty, ...)                                    \
+  *ATOM_GET(alloc, idx) = (Atom) {                                             \
+    ty, {                                                                      \
+      .ty = { __VA_ARGS__ }                                                    \
+    }                                                                          \
+  }
+
 #define ATOM_TY(allocator, idx) (ATOM_GET((allocator), idx)->ty)
 #define ATOM_VALUE(allocator, idx, ty) (ATOM_GET((allocator), idx)->as.ty)
 
@@ -102,7 +118,10 @@ bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
 #define ATOM_MAKE_S(allocator, ty, ...)                                        \
   (SexpAllocator_alloc((allocator), (Atom){ty, {.ty = {__VA_ARGS__}}}))
 
-#define ATOM_MAKE_NIL(allocator) ((allocator)->nil)
+#define ATOM_MAKE_NIL(allocator) (ATOM_MAKE(allocator, ATOM_NIL))
+#define ATOM_MAKE_CONS(allocator)                                              \
+  (ATOM_MAKE_S(allocator, ATOM_CONS, ATOM_MAKE_NIL(allocator),                 \
+               ATOM_MAKE_NIL(allocator)))
 
 #define INTRINSIC(alloc, name, fn, argc)                                \
     do {                                                                \

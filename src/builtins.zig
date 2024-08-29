@@ -1,21 +1,26 @@
 const std = @import("std");
 
-const c = @cImport({
-    @cInclude("warlock_builtins.h");
-    @cInclude("warlock.h");
-    @cInclude("warlock_atom.h");
-    @cInclude("warlock_error.h");
-    @cInclude("warlock_eval.h");
-});
+const Ctx = @import("context.zig");
+const Sexp = Ctx.Sexp;
 
-fn AtomMake(alloc: *SexpAllocator, ty: c.AtomType) Sexp {
-    return c.SexpAllocator_alloc(alloc, .{ .ty = alloc });
-}
+fn Add(ctx: *Ctx, _: std.mem.Allocator, sexp: Sexp) Sexp {
+    var result: f32 = 0.0;
 
-fn AtomMakeS(alloc: *SexpAllocator, ty: c.AtomType) Sexp {
-    return c.SexpAllocator_alloc(alloc, .{ .ty = alloc });
-}
+    var current = sexp;
 
-export fn Sexp_Add(alloc: *SexpAllocator, sexp: Sexp) Sexp {
-    const result = 
+    while (!ctx.consTerminated(current)) {
+        switch (ctx.get(current)) {
+            .Cons => |cons| {
+                switch (ctx.get(cons.data)) {
+                    .Number => |v| result += v,
+                    else => break,
+                }
+
+                current = cons.next;
+            },
+            else => break,
+        }
+    }
+
+    return ctx.alloc(.Number{result});
 }

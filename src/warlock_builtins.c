@@ -268,3 +268,53 @@ Sexp Sexp_Import(SexpAllocator *alloc, Sexp sexp) {
     
     return ATOM_MAKE(alloc, ATOM_NIL);
 }
+
+Sexp Sexp_Quote(SexpAllocator *alloc, Sexp sexp) {
+    return ATOM_MAKE_V(alloc, ATOM_QUOTE, sexp);
+}
+
+Sexp Sexp_Define(SexpAllocator *alloc, Sexp sexp) {
+    Sexp symbol = Sexp_First(alloc, sexp);
+    if(ATOM_TY(alloc, symbol) == ATOM_SYMBOL) {
+        sexp = Sexp_Rest(alloc, sexp);
+
+        Sexp value = Sexp_First(alloc, sexp);
+        SexpAllocator_setLocal(alloc, ATOM_VALUE(alloc, symbol, ATOM_SYMBOL), value);
+    }
+
+    return ATOM_MAKE_NIL(alloc);
+}
+
+Sexp Sexp_If(SexpAllocator *alloc, Sexp sexp) {
+    Sexp cond = Eval_Atom(alloc, Sexp_First(alloc, sexp));
+    if(ATOM_TY(alloc, cond) != ATOM_BOOLEAN) {
+        Warlock_error("condition must be a boolean");
+        return ATOM_MAKE_NIL(alloc);
+    }
+
+    sexp = Sexp_Rest(alloc, sexp);
+    Sexp t = Sexp_First(alloc, sexp);
+    sexp = Sexp_Rest(alloc, sexp);
+    Sexp f = Sexp_First(alloc, sexp);
+
+    return Eval_Atom(alloc, ATOM_VALUE(alloc, cond, ATOM_BOOLEAN) ? t : f);
+}
+
+Sexp Sexp_Lambda(SexpAllocator *alloc, Sexp sexp) {
+    Sexp args = Sexp_First(alloc, sexp);
+    sexp = Sexp_Rest(alloc, sexp);
+    Sexp body = Sexp_First(alloc, sexp);
+
+    Sexp current = args;
+    
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+        Sexp arg = Sexp_First(alloc, current);
+        if(ATOM_TY(alloc, arg) != ATOM_SYMBOL) {
+            Warlock_error("function parameters must all be symbols");
+            return ATOM_MAKE_NIL(alloc);
+        }
+        current = Sexp_Rest(alloc, current);
+    }
+
+    return ATOM_MAKE_S(alloc, ATOM_FN, args, body);
+}

@@ -1,6 +1,33 @@
 const std = @import("std");
-const Atom = @import("atom.zig");
-const Sexp = Atom.Sexp;
+
+const Self = @This();
+
+pub const IntrinsicFn = *const fn (ctx: *Self, allocator: std.mem.Allocator, sexp: Sexp) Sexp;
+pub const Sexp = u64;
+
+pub const Atom = union(enum) {
+    Number: f64,
+    Boolean: bool,
+    String: []const u8,
+    Symbol: []const u8,
+    Keyword: []const u8,
+    Fn: struct {
+        args: Sexp,
+        body: Sexp,
+    },
+    Intrinsic: struct {
+        name: []u8,
+        func: IntrinsicFn,
+        argc: i64,
+    },
+    Cons: struct {
+        data: Sexp,
+        next: Sexp,
+    },
+    Quote: Sexp,
+
+    Nil,
+};
 
 const Local = struct {
     scope: u64,
@@ -17,8 +44,6 @@ locals: LocalsType,
 
 nil: Sexp,
 
-const Self = @This();
-
 pub fn make(allocator: std.mem.Allocator) !Self {
     var result = Self{
         .stream = StreamType.init(allocator),
@@ -28,7 +53,7 @@ pub fn make(allocator: std.mem.Allocator) !Self {
         .nil = 0,
     };
 
-    result.nil = try result.alloc(.{ .payload = .Nil });
+    result.nil = try result.alloc(.Nil);
 
     return result;
 }
@@ -38,12 +63,20 @@ pub fn free(self: *Self) void {
     self.locals.deinit();
 }
 
-pub fn get(self: *Self, sexp: Sexp) *Atom {
+pub fn get(self: *Self, sexp: Sexp) Atom {
+    return self.stream.items[sexp];
+}
+
+pub fn getr(self: *Self, sexp: Sexp) *Atom {
     return &self.stream.items[sexp];
 }
 
+pub fn set(self: *Self, sexp: Sexp, value: Sexp) void {
+    self.stream.items[sexp] = self.get(value);
+}
+
 pub fn prettyPrint(self: *Self, writer: anytype, sexp: Sexp) !void {
-    return switch (self.get(sexp).payload) {
+    return switch (self.get(sexp)) {
         .Number => |v| try writer.print("{d}", .{v}),
         .Boolean => |v| try writer.print("{s}", .{if (v) "#t" else "#f"}),
         .String => |v| try writer.print("\"{s}\"", .{v}),
@@ -116,11 +149,11 @@ pub fn getLocal(self: *Self, name: []u8) Sexp {
         }
     }
 
-    return self.nil;
+    return self.alloc(.Nil);
 }
 
 pub fn alloc(self: *Self, atom: Atom) !Sexp {
-    if (atom.payload == .Nil) {
+    if (atom == .Nil) {
         return self.nil;
     }
 
@@ -129,4 +162,10 @@ pub fn alloc(self: *Self, atom: Atom) !Sexp {
     try self.stream.append(atom);
 
     return idx;
+}
+
+pub fn consTerminated(self: *Self, sexp: Sexp) bool {
+    _ = self;
+    _ = sexp;
+    return true;
 }

@@ -1,7 +1,7 @@
 const std = @import("std");
 
 const Ctx = @import("context.zig");
-const Sexp = @import("atom.zig").Sexp;
+const Sexp = Ctx.Sexp;
 const Reader = @import("reader.zig");
 const Eval = @import("eval.zig");
 
@@ -15,7 +15,6 @@ fn runFile(allocator: std.mem.Allocator, ctx: *Ctx, path: []const u8) !Sexp {
 fn run(_: std.mem.Allocator, ctx: *Ctx, src: []const u8) !Sexp {
     var reader = Reader.make(src);
     const root = try reader.run(ctx);
-
     return try Eval.run(ctx, root);
 }
 
@@ -37,17 +36,9 @@ pub fn main() !void {
     defer ctx.free();
 
     const stdout = std.io.getStdOut().writer();
-    const stdin = std.io.getStdIn().reader();
-    _ = stdin;
 
     registerBuiltins(&ctx);
 
     const root = try runFile(allocator, &ctx, "test/test.mr");
     try ctx.prettyPrint(stdout, root);
-
-    while (running) {
-        try stdout.print("* ", .{});
-
-        try stdout.print("\n", .{});
-    }
 }

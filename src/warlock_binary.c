@@ -10,6 +10,7 @@
 static bool running = true;
 Sexp REPL_Quit(SexpAllocator* alloc, Sexp sexp) {
     running = false;
+    printf("quitted");
 
     return ATOM_MAKE_NIL(alloc);
 }

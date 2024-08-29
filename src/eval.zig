@@ -1,8 +1,8 @@
 const std = @import("std");
-const Atom = @import("atom.zig");
 const Ctx = @import("context.zig");
+const Sexp = Ctx.Sexp;
 
-pub fn run(ctx: *Ctx, root: Atom.Sexp) !Atom.Sexp {
+pub fn run(ctx: *Ctx, root: Sexp) !Sexp {
     _ = root;
 
     return ctx.nil;
