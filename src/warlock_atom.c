@@ -189,3 +189,16 @@ void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp) {
 bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_TY(alloc, sexp) == ATOM_NIL;
 }
+
+u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp) {
+    u64 result = 0;
+
+    Sexp current = sexp;
+
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+        result++;
+        current = ATOM_VALUE(alloc, current, ATOM_CONS).next;
+    }
+
+    return result;
+}

@@ -90,6 +90,7 @@ String SexpAllocator_toString(SexpAllocator *alloc, Sexp node);
 void SexpAllocator_print(SexpAllocator *alloc, Sexp sexp);
 
 bool SexpAllocator_ConsTerminated(SexpAllocator *alloc, Sexp sexp);
+u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp);
 
 #define ATOM_GET(allocator, idx) ((allocator)->data + idx)
 

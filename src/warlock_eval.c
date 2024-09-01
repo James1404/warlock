@@ -49,12 +49,15 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
         }
     }
 
+    
     Sexp current = sexp;
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
         ATOM_VALUE(alloc, current, ATOM_CONS).data = Eval_Atom(alloc, data);
         current = Sexp_Rest(alloc, current);
     }
+
+    fn = Sexp_First(alloc, sexp);
 
     if(ATOM_TY(alloc, fn) == ATOM_INTRINSIC) {
         Intrinsic intrinsic = ATOM_VALUE(alloc, fn, ATOM_INTRINSIC);
@@ -72,13 +75,13 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
 
     if(ATOM_TY(alloc, fn) == ATOM_FN) {
         Sexp args = Sexp_Rest(alloc, sexp);
-        i64 len = Sexp_Len(alloc, args);
+        u64 len = SexpAllocator_ConsLen(alloc, args);
 
         SexpAllocator_incScope(alloc);
 
         Sexp result = ATOM_MAKE_NIL(alloc);
 
-        if(len != ATOM_VALUE(alloc, fn, ATOM_FN).args) {
+        if(len != SexpAllocator_ConsLen(alloc, ATOM_VALUE(alloc, fn, ATOM_FN).args)) { 
             Warlock_error("Invalid amount of arguments");
             return ATOM_MAKE_NIL(alloc);
         }
