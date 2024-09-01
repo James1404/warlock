@@ -12,11 +12,11 @@
 SexpAllocator SexpAllocator_make(void) {
     SexpAllocator result = {
         .len = 0,
-        .allocated = 0,
+        .allocated = 8,
         .data = NULL,
 
         .localsLen = 0,
-        .localsAllocated = 0,
+        .localsAllocated = 8,
         .locals = NULL,
 
         .nil = 0,
@@ -34,28 +34,21 @@ void SexpAllocator_free(SexpAllocator* alloc) {
 
 Sexp SexpAllocator_alloc(SexpAllocator* alloc, Atom atom) {
     if(!alloc->data) {
-        alloc->allocated = 100;
-        alloc->data = malloc(sizeof(Atom)*alloc->allocated);
+        alloc->allocated = 8;
+        alloc->data = malloc(sizeof(*alloc->data) * alloc->allocated);
+    }
+
+    if(alloc->len >= alloc->allocated) {
+        alloc->allocated *= 2;
+        alloc->data = realloc(alloc->data, sizeof(*alloc->data) * alloc->allocated);
     }
 
     Sexp sexp = alloc->len;
     alloc->data[sexp] = atom;
     alloc->len++;
 
-    if(alloc->len >= alloc->allocated) {
-        alloc->allocated *= 2;
-        Atom* temp = realloc(alloc->data, sizeof(Atom)*alloc->allocated);
-        if(temp) {
-            alloc->data = temp;
-        }
-        else {
-            Warlock_error("Failed to realloc in %s", __func__);
-        }
-    }
-
     return sexp;
 }
-
 
 void SexpAllocator_incScope(SexpAllocator *alloc) { alloc->scope++; }
 void SexpAllocator_decScope(SexpAllocator *alloc) {

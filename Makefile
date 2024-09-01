@@ -15,13 +15,13 @@ INCLUDE = include\
 
 INCLUDE_DIRS := $(foreach dir,$(INCLUDE),-I$(dir))
 
-CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -g3 -Og -std=c99\
+CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c99\
 		  $(INCLUDE_DIRS)\
 	      `llvm-config --cflags`
 
-CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -g3 -Og -std=c++20 $(INCLUDE_DIRS)
+CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c++20 $(INCLUDE_DIRS)
 
-LDFLAGS = -fsanitize=address -static-libasan \
+LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libasan \
 	      `llvm-config --libs`
 
 SRC := $(shell find $(SRC_DIR)/ -type f \( -iname \*.c -o -iname \*.cpp \))

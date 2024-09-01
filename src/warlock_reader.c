@@ -209,10 +209,11 @@ static Sexp Reader_ReadList(Reader* reader, SexpAllocator* alloc) {
                 Warlock_error("Reached end-of-file without finding ')' character");
                 return ATOM_MAKE_NIL(alloc);
             }
-            
-            ATOM_SET_S(alloc, current, ATOM_CONS,
-                       Reader_ReadAtom(reader, alloc), ATOM_MAKE_NIL(alloc));
-            
+
+            Sexp data = Reader_ReadAtom(reader, alloc);
+            Sexp next = ATOM_MAKE_NIL(alloc);
+            ATOM_SET_S(alloc, current, ATOM_CONS, data, next);
+
             current = Sexp_Rest(alloc, current);
         
             Reader_SkipAllWhitespace(reader);
@@ -224,12 +225,14 @@ static Sexp Reader_ReadList(Reader* reader, SexpAllocator* alloc) {
 
 static Sexp Reader_ReadTopLevel(Reader* reader, SexpAllocator* alloc) {
     Reader_SkipAllWhitespace(reader);
+
     Sexp start = ATOM_MAKE_NIL(alloc);
     Sexp current = start;
 
     while(!Reader_eof(reader)) {
-        ATOM_SET_S(alloc, current, ATOM_CONS,
-                   Reader_ReadAtom(reader, alloc), ATOM_MAKE_NIL(alloc));
+        Sexp data = Reader_ReadAtom(reader, alloc);
+        Sexp next = ATOM_MAKE_NIL(alloc);
+        ATOM_SET_S(alloc, current, ATOM_CONS, data, next);
         
         current = Sexp_Rest(alloc, current);
         

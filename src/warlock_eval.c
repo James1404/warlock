@@ -32,6 +32,12 @@ Sexp Eval_Atom(SexpAllocator* alloc, Sexp sexp) {
 
 Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
     if(ATOM_TY(alloc, sexp) != ATOM_CONS) return ATOM_MAKE_NIL(alloc);
+
+    Sexp fn = Sexp_First(alloc, sexp);
+
+    if(ATOM_TY(alloc, fn) == ATOM_SYNTAX) {
+        return;
+    }
     
     Sexp current = sexp;
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
@@ -40,7 +46,6 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
         current = Sexp_Rest(alloc, current);
     }
 
-    Sexp fn = Sexp_First(alloc, sexp);
     if(ATOM_TY(alloc, fn) == ATOM_INTRINSIC) {
         Sexp args = Sexp_Rest(alloc, sexp);
         Intrinsic intrinsic = ATOM_VALUE(alloc, fn, ATOM_INTRINSIC);
