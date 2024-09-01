@@ -27,9 +27,6 @@ Sexp Sexp_Concat(SexpAllocator *alloc, Sexp sexp);
 Sexp Sexp_Eval(SexpAllocator *alloc, Sexp sexp);
 Sexp Sexp_Import(SexpAllocator *alloc, Sexp sexp);
 
-Sexp Sexp_Quote(SexpAllocator *alloc, Sexp sexp);
-Sexp Sexp_Define(SexpAllocator *alloc, Sexp sexp);
 Sexp Sexp_If(SexpAllocator *alloc, Sexp sexp);
-Sexp Sexp_Lambda(SexpAllocator *alloc, Sexp sexp);
 
 #endif//WARLOCK_BUILTINS_H

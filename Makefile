@@ -1,5 +1,5 @@
-CC = gcc
-CPP = g++
+CC = cc
+CPP = c++
 
 EXE = warlock
 
@@ -21,7 +21,7 @@ CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanit
 
 CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c++20 $(INCLUDE_DIRS)
 
-LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libasan \
+LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libsan \
 	      `llvm-config --libs`
 
 SRC := $(shell find $(SRC_DIR)/ -type f \( -iname \*.c -o -iname \*.cpp \))

@@ -23,10 +23,6 @@ typedef struct {
     void* ptr;
 } FFI_Func;
 
-typedef struct {
-    Sexp args, body;
-} Syntax;
-
 typedef enum {
   ATOM_NUMBER,
   ATOM_BOOLEAN,
@@ -39,7 +35,6 @@ typedef enum {
   ATOM_CONS,
   ATOM_QUOTE,
   ATOM_NIL,
-  ATOM_SYNTAX,
 } AtomType;
 
 typedef struct {
@@ -59,7 +54,6 @@ typedef struct {
         Intrinsic ATOM_INTRINSIC;
         FFI_Func ATOM_FFI;
         Sexp ATOM_QUOTE;
-        Syntax ATOM_SYNTAX;
     } as;
 } Atom;
 

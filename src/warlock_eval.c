@@ -34,11 +34,21 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
     if(ATOM_TY(alloc, sexp) != ATOM_CONS) return ATOM_MAKE_NIL(alloc);
 
     Sexp fn = Sexp_First(alloc, sexp);
+    Sexp args = Sexp_Rest(alloc, sexp);
 
-    if(ATOM_TY(alloc, fn) == ATOM_SYNTAX) {
-        return;
+    if(ATOM_TY(alloc, fn) == ATOM_SYMBOL) {
+        String symbol = ATOM_VALUE(alloc, fn, ATOM_SYMBOL);
+        if(STR_CMP_WITH_RAW(symbol, "lambda")) {
+            return Eval_Lambda(alloc, args);
+        }
+        if(STR_CMP_WITH_RAW(symbol, "define")) {
+            return Eval_Define(alloc, args);
+        }
+        if(STR_CMP_WITH_RAW(symbol, "quote")) {
+            return Eval_Quote(alloc, args);
+        }
     }
-    
+
     Sexp current = sexp;
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
@@ -47,7 +57,6 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
     }
 
     if(ATOM_TY(alloc, fn) == ATOM_INTRINSIC) {
-        Sexp args = Sexp_Rest(alloc, sexp);
         Intrinsic intrinsic = ATOM_VALUE(alloc, fn, ATOM_INTRINSIC);
 
         Sexp lenSexp = Sexp_Len(alloc, args);
@@ -109,3 +118,38 @@ bool Eval_match(SexpAllocator* alloc, Sexp sexp, const char* expected) {
     return false;
 }
 
+
+Sexp Eval_Lambda(SexpAllocator *alloc, Sexp sexp) {
+    Sexp args = Sexp_First(alloc, sexp);
+    sexp = Sexp_Rest(alloc, sexp);
+    Sexp body = Sexp_First(alloc, sexp);
+
+    Sexp current = args;
+    
+    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+        Sexp arg = Sexp_First(alloc, current);
+        if(ATOM_TY(alloc, arg) != ATOM_SYMBOL) {
+            Warlock_error("function parameters must all be symbols");
+            return ATOM_MAKE_NIL(alloc);
+        }
+        current = Sexp_Rest(alloc, current);
+    }
+
+    return ATOM_MAKE_S(alloc, ATOM_FN, args, body);  
+}
+
+Sexp Eval_Define(SexpAllocator *alloc, Sexp sexp) {
+    Sexp symbol = Sexp_First(alloc, sexp);
+    if(ATOM_TY(alloc, symbol) == ATOM_SYMBOL) {
+        sexp = Sexp_Rest(alloc, sexp);
+
+        Sexp value = Sexp_First(alloc, sexp);
+        SexpAllocator_setLocal(alloc, ATOM_VALUE(alloc, symbol, ATOM_SYMBOL), value);
+    }
+
+    return ATOM_MAKE_NIL(alloc);  
+}
+
+Sexp Eval_Quote(SexpAllocator *alloc, Sexp sexp) {
+    return ATOM_MAKE_V(alloc, ATOM_QUOTE, sexp);  
+}
