@@ -29,6 +29,7 @@ typedef struct {
 
 #define STR_CMP(lhs, rhs) (strncmp((lhs).raw, (rhs).raw, (lhs).len) == 0)
 #define STR_CMP_WITH_RAW(lhs, rhs) (strncmp((lhs).raw, (rhs), strlen(rhs)) == 0)
+#define STR_CMP_RAWS(lhs, rhs) (strcmp((lhs), (rhs)) == 0)
 
 #define STR_IDX(src, i) ((src).raw[i])
 #define STR_SUBSTR(src, start, len) ((String){(src).raw + start, len})
