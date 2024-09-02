@@ -1,6 +1,7 @@
 # Warlock
 
-A currently work-in progress, custom lisp dialect, focussed on speed and safety.
+Warlock is a work-in-progress, custom lisp dialect, focused on speed, low level control, and safety.
+
 The goal of this langauge for it to be suitable for system's programming, similar to C. So Warlock will support manual memory management, and strong type system, and a borrow checker for better safety guarentees.
 
 Warlock will be compiled to machine code via LLVM, meaning you'll have a fast binary to use.
