@@ -18,11 +18,7 @@ SexpAllocator SexpAllocator_make(void) {
         .localsLen = 0,
         .localsAllocated = 8,
         .locals = NULL,
-
-        .nil = 0,
     };
-
-    result.nil = ATOM_MAKE(&result, ATOM_NIL);
 
     return result;
 }
@@ -68,24 +64,15 @@ void SexpAllocator_setLocal(SexpAllocator* alloc, String name, Sexp sexp) {
 
     if(alloc->localsLen >= alloc->localsAllocated) {
         alloc->localsAllocated *= 2;
-
-        Local* temp = realloc(alloc->locals, sizeof(Local) * alloc->localsAllocated);
-        if(temp) {
-            alloc->locals = temp;
-        }
-        else {
-            Warlock_error("Env_set realloc error");
-            return;
-        }
+        alloc->locals = realloc(alloc->locals, sizeof(Local) * alloc->localsAllocated);
     }
 
     Local* local = alloc->locals + (alloc->localsLen++);
     *local = (Local) {
         .scope = alloc->scope,
         .sexp = sexp,
+        .name = name,
     };
-
-    STR_CPY_ALLOC(local->name, name);
 }
 
 Sexp SexpAllocator_getLocal(SexpAllocator* alloc, String name) {

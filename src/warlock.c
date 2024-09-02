@@ -99,6 +99,7 @@ Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
     Sexp result = Warlock_run(alloc, (String) { buffer, len });
 
     free(buffer);
+    STR_FREE(nullterminated);
 
     return result;
 }

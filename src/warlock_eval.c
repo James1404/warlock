@@ -38,11 +38,11 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
 
     if(ATOM_TY(alloc, fn) == ATOM_SYMBOL) {
         String symbol = ATOM_VALUE(alloc, fn, ATOM_SYMBOL);
-        if(STR_CMP_WITH_RAW(symbol, "lambda")) {
-            return Eval_Lambda(alloc, args);
+        if(STR_CMP_WITH_RAW(symbol, "fn")) {
+            return Eval_Fn(alloc, args);
         }
-        if(STR_CMP_WITH_RAW(symbol, "define")) {
-            return Eval_Define(alloc, args);
+        if(STR_CMP_WITH_RAW(symbol, "def")) {
+            return Eval_Def(alloc, args);
         }
         if(STR_CMP_WITH_RAW(symbol, "quote")) {
             return Eval_Quote(alloc, args);
@@ -122,7 +122,7 @@ bool Eval_match(SexpAllocator* alloc, Sexp sexp, const char* expected) {
 }
 
 
-Sexp Eval_Lambda(SexpAllocator *alloc, Sexp sexp) {
+Sexp Eval_Fn(SexpAllocator *alloc, Sexp sexp) {
     Sexp args = Sexp_First(alloc, sexp);
     sexp = Sexp_Rest(alloc, sexp);
     Sexp body = Sexp_First(alloc, sexp);
@@ -141,7 +141,7 @@ Sexp Eval_Lambda(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_S(alloc, ATOM_FN, args, body);  
 }
 
-Sexp Eval_Define(SexpAllocator *alloc, Sexp sexp) {
+Sexp Eval_Def(SexpAllocator *alloc, Sexp sexp) {
     Sexp symbol = Sexp_First(alloc, sexp);
     if(ATOM_TY(alloc, symbol) == ATOM_SYMBOL) {
         sexp = Sexp_Rest(alloc, sexp);

@@ -69,8 +69,6 @@ struct SexpAllocator {
     
     u64 scope;
 
-    Sexp nil;
-
     u64 localsLen, localsAllocated;
     Local* locals;
 };
