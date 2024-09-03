@@ -8,10 +8,6 @@
 
 #define REPL_LEN 256
 
-#define EXE_NAME "Warlock"
-#define MAJOR_VERSION 0
-#define MINOR_VERSION 01
-
 static bool running = true;
 static SexpAllocator allocator = { 0 };
 

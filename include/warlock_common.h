@@ -22,7 +22,8 @@ typedef unsigned char   ubyte;
 typedef float f32;
 typedef long double f64;
 
-typedef size_t usize;
+typedef intptr_t isize;
+typedef uintptr_t usize;
 
 #define U8_MAX  UCHAR_MAX
 #define U16_MAX USHRT_MAX

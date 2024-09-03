@@ -15,11 +15,13 @@ INCLUDE = include\
 
 INCLUDE_DIRS := $(foreach dir,$(INCLUDE),-I$(dir))
 
-CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c99\
+DEFINES = -D EXE_NAME=\"$(EXE)\"
+
+CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c99 $(DEFINES)\
 		  $(INCLUDE_DIRS)\
 	      `llvm-config --cflags`
 
-CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c++20 $(INCLUDE_DIRS)
+CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c++20 $(DEFINES) $(INCLUDE_DIRS)
 
 LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libsan \
 	      `llvm-config --libs`
@@ -34,8 +36,17 @@ $(BUILD_DIR)/$(EXE): $(OBJ) | $(BUILD_DIR) $(CACHE_DIR) $(BUILD_DIR)/$(TEST_DIR)
 	@$(CPP) -o $@ $^ $(LDFLAGS)
 
 run: $(BUILD_DIR)/$(EXE)
-	@echo Running: \"$(EXE)\"
 	@(cd $(BUILD_DIR) && ./$(EXE))
+
+repl: $(BUILD_DIR)/$(EXE)
+	@(cd $(BUILD_DIR) && ./$(EXE) repl)
+
+help: $(BUILD_DIR)/$(EXE)
+	@(cd $(BUILD_DIR) && ./$(EXE) help)
+
+
+version: $(BUILD_DIR)/$(EXE)
+	@(cd $(BUILD_DIR) && ./$(EXE) version)
 
 -include $(DEPS)
 
