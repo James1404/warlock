@@ -5,7 +5,6 @@
 
 Sexp Eval_run(SexpAllocator* alloc, Sexp sexp);
 
-Sexp Eval_TopLevel(SexpAllocator* alloc, Sexp sexp);
 Sexp Eval_Atom(SexpAllocator *alloc, Sexp sexp);
 Sexp Eval_Cons(SexpAllocator *alloc, Sexp sexp);
 
