@@ -8,6 +8,10 @@ Sexp Eval_run(SexpAllocator* alloc, Sexp sexp) {
     return Eval_Atom(alloc, sexp);
 }
 
+Sexp Eval_TopLevel(SexpAllocator *alloc, Sexp sexp) {
+    return ATOM_MAKE_NIL(alloc);
+}
+
 Sexp Eval_Atom(SexpAllocator* alloc, Sexp sexp) {
     switch(ATOM_TY(alloc, sexp)) {
     case ATOM_SYMBOL: {
@@ -111,16 +115,6 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
 
     return Sexp_First(alloc, sexp);
 }
-
-bool Eval_match(SexpAllocator* alloc, Sexp sexp, const char* expected) {
-    if(ATOM_TY(alloc, sexp) == ATOM_SYMBOL) {
-        String symbol = ATOM_VALUE(alloc, sexp, ATOM_SYMBOL);
-        return STR_CMP_WITH_RAW(symbol, expected);
-    }
-
-    return false;
-}
-
 
 Sexp Eval_Fn(SexpAllocator *alloc, Sexp sexp) {
     Sexp args = Sexp_First(alloc, sexp);
