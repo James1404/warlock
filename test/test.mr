@@ -1,3 +1,9 @@
 (println 5)
 (println 5)
 (println 5)
+
+(def x 25)
+(+ x x)
+
+(def square (fn (x) (* x x)))
+(println (square 5))

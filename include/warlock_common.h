@@ -2,7 +2,6 @@
 #define WARLOCK_COMMON_H
 
 #include <stdbool.h>
-#include <string.h>
 #include <limits.h>
 #include <stdint.h>
 
@@ -34,5 +33,7 @@ typedef uintptr_t usize;
 #define I16_MAX SHRT_MAX
 #define I32_MAX LONG_MAX
 #define I64_MAX LLONG_MAX
+
+#define ARRAY_LEN(array) (sizeof(array) / sizeof(*array))
 
 #endif//WARLOCK_COMMON_H

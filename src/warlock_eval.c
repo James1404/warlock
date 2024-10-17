@@ -4,6 +4,17 @@
 #include "warlock_error.h"
 #include "warlock_string.h"
 
+typedef struct {
+    const char* name;
+    Sexp (*fn)(SexpAllocator *, Sexp);
+} Builtin;
+
+static Builtin builtins[] = {
+    {"fn", &Eval_Fn},
+    {"def", &Eval_Def},
+    {"quote", &Eval_Quote},
+};
+
 Sexp Eval_run(SexpAllocator* alloc, Sexp sexp) {
     return Eval_Atom(alloc, sexp);
 }
@@ -11,7 +22,7 @@ Sexp Eval_run(SexpAllocator* alloc, Sexp sexp) {
 Sexp Eval_Atom(SexpAllocator* alloc, Sexp sexp) {
     switch(ATOM_TY(alloc, sexp)) {
     case ATOM_SYMBOL: {
-        return Eval_Atom(alloc, SexpAllocator_getLocal(alloc, ATOM_VALUE(alloc, sexp, ATOM_SYMBOL)));
+        return SexpAllocator_getLocal(alloc, ATOM_VALUE(alloc, sexp, ATOM_SYMBOL));
     } break;
     case ATOM_CONS: return Eval_Cons(alloc, sexp);
     case ATOM_QUOTE: return ATOM_VALUE(alloc, sexp, ATOM_QUOTE);
@@ -29,26 +40,24 @@ Sexp Eval_Atom(SexpAllocator* alloc, Sexp sexp) {
 
     return ATOM_MAKE_NIL(alloc);
 }
-
+  
 Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
-    if(ATOM_TY(alloc, sexp) != ATOM_CONS) return ATOM_MAKE_NIL(alloc);
+    if(ATOM_TY(alloc, sexp) != ATOM_CONS) {
+        return Eval_Atom(alloc, sexp);
+    }
 
     Sexp fn = Sexp_First(alloc, sexp);
     Sexp args = Sexp_Rest(alloc, sexp);
 
     if(ATOM_TY(alloc, fn) == ATOM_SYMBOL) {
         String symbol = ATOM_VALUE(alloc, fn, ATOM_SYMBOL);
-        if(STR_CMP_WITH_RAW(symbol, "fn")) {
-            return Eval_Fn(alloc, args);
-        }
-        if(STR_CMP_WITH_RAW(symbol, "def")) {
-            return Eval_Def(alloc, args);
-        }
-        if(STR_CMP_WITH_RAW(symbol, "quote")) {
-            return Eval_Quote(alloc, args);
+
+        for(u32 i = 0; i < ARRAY_LEN(builtins); i++) {
+            if(STR_CMP_WITH_RAW(symbol, builtins[i].name)) {
+                return builtins[i].fn(alloc, args);
+            }
         }
     }
-
     
     Sexp current = sexp;
     while(!SexpAllocator_ConsTerminated(alloc, current)) {
@@ -81,7 +90,7 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
 
         Sexp result = ATOM_MAKE_NIL(alloc);
 
-        if(len != SexpAllocator_ConsLen(alloc, ATOM_VALUE(alloc, fn, ATOM_FN).args)) { 
+        if(len != SexpAllocator_ConsLen(alloc, ATOM_VALUE(alloc, fn, ATOM_FN).args)) {
             Warlock_error("Invalid amount of arguments");
             return ATOM_MAKE_NIL(alloc);
         }
@@ -108,8 +117,7 @@ Sexp Eval_Cons(SexpAllocator* alloc, Sexp sexp) {
         return result;
     }
 
-
-    return Sexp_First(alloc, sexp);
+    return sexp;
 }
 
 Sexp Eval_Fn(SexpAllocator *alloc, Sexp sexp) {
