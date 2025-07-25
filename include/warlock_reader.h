@@ -9,12 +9,13 @@ typedef struct {
     String src;
     u64 start, position, line, line_pos;
 
-    Sexp root;
+    Sexp* lines;
+    u64 linesLen, linesAllocated;
 } Reader;
 
 Reader Reader_make(String src);
 void Reader_free(Reader* reader);
 
-void Reader_run(Reader* reader, SexpAllocator* alloc);
+void Reader_run(Reader* reader, Environment* alloc);
 
 #endif//WARLOCK_READER_H

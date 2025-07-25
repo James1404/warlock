@@ -21,7 +21,7 @@ Atom warlock_concat(List args) {
 }
 */
 
-void Warlock_builtin(SexpAllocator* alloc) {
+void Warlock_builtin(Environment* alloc) {
     INTRINSIC(alloc, "+", Sexp_Add, -1);
     INTRINSIC(alloc, "-", Sexp_Subtract, -1);
     INTRINSIC(alloc, "*", Sexp_Multiply, -1);
@@ -55,14 +55,19 @@ void Warlock_builtin(SexpAllocator* alloc) {
     INTRINSIC(alloc, "lambda", Sexp_Rest, 2);
 }
 
-Sexp Warlock_run(SexpAllocator* alloc, String src) {
+Sexp Warlock_run(Environment* alloc, String src) {
     Reader reader = Reader_make(src);
 
     Reader_run(&reader, alloc);
- 
+
     if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
 
-    Sexp result = Eval_run(alloc, reader.root);
+    Sexp result = ATOM_MAKE_NIL(alloc);
+
+    for (i32 i = 0; i < reader.linesLen; i++) {
+        Sexp line = reader.lines[i];
+        result = Eval_run(alloc, line);
+    }
 
     if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
 
@@ -71,7 +76,7 @@ Sexp Warlock_run(SexpAllocator* alloc, String src) {
     return result;
 }
 
-Sexp Warlock_run_file(SexpAllocator* alloc, String path) {
+Sexp Warlock_run_file(Environment* alloc, String path) {
     String nullterminated;
     STR_CPY_ALLOC_NULL(nullterminated, path);
     

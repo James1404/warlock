@@ -1,7 +1,7 @@
 #include "warlock.h"
 #include "warlock_atom.h"
-#include "warlock_error.h"
 #include "warlock_command_args.h"
+#include "warlock_error.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -9,9 +9,9 @@
 #define REPL_LEN 256
 
 static bool running = true;
-static SexpAllocator allocator = { 0 };
+static Environment allocator = {0};
 
-Sexp REPL_Quit(SexpAllocator* alloc, Sexp sexp) {
+Sexp REPL_Quit(Environment* alloc, Sexp sexp) {
     running = false;
     return ATOM_MAKE_NIL(alloc);
 }
@@ -23,16 +23,16 @@ void versionParser(int argc, char** argv) {
 void replParser(int argc, char** argv) {
     INTRINSIC(&allocator, "quit", REPL_Quit, 0);
 
-    while(running) {
+    while (running) {
         printf("* ");
         char string[REPL_LEN];
-        if(!fgets(string, REPL_LEN, stdin)) {
+        if (!fgets(string, REPL_LEN, stdin)) {
             Warlock_error("fgets failed");
         }
 
-        Sexp result = Warlock_run(&allocator, (String) { string, strlen(string) });
+        Sexp result = Warlock_run(&allocator, (String){string, strlen(string)});
 
-        SexpAllocator_print(&allocator, result);
+        Environment_print(&allocator, result);
         printf("\n");
     }
 }
@@ -42,20 +42,21 @@ void runParser(int argc, char** argv) {
     Warlock_run_file(&allocator, str);
 }
 
-#define validArgumentsLen (sizeof(validArguments) / sizeof(*validArguments))
-static Argument validArguments[] = {
-    MAKE_ARGUMENT("version", "output the version of your installed compiler", &versionParser),
-    MAKE_ARGUMENT("run", "run the provided file", &runParser),
-    MAKE_ARGUMENT("repl", "run the interactive REPL", &replParser),
-};
-
 int main(int argc, char** argv) {
-    allocator = SexpAllocator_make();
+    allocator = Environment_make();
 
     Warlock_builtin(&allocator);
 
+    Argument validArguments[] = {
+        MAKE_ARGUMENT("version",
+                      "output the version of your installed compiler",
+                      &versionParser),
+        MAKE_ARGUMENT("run", "run the provided file", &runParser),
+        MAKE_ARGUMENT("repl", "run the interactive REPL", &replParser),
+    };
+    usize validArgumentsLen = sizeof(validArguments) / sizeof(*validArguments);
+
     ParseArguments(argc, argv, validArguments, validArgumentsLen);
 
-    SexpAllocator_free(&allocator);
+    Environment_free(&allocator);
 }
-

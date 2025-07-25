@@ -7,8 +7,8 @@
 #define MAJOR_VERSION 0
 #define MINOR_VERSION 01
 
-void Warlock_builtin(SexpAllocator* alloc);
-Sexp Warlock_run(SexpAllocator* alloc, String src);
-Sexp Warlock_run_file(SexpAllocator* alloc, String path);
+void Warlock_builtin(Environment* alloc);
+Sexp Warlock_run(Environment* alloc, String src);
+Sexp Warlock_run_file(Environment* alloc, String path);
 
 #endif//WARLOCK_H

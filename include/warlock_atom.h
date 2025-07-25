@@ -6,14 +6,14 @@
 #include "warlock_string.h"
 
 typedef struct Atom* Sexp;
-typedef struct SexpAllocator SexpAllocator;
+typedef struct Environment Environment;
 
 typedef struct Fn {
     Sexp args;
     Sexp body;
 } Fn;
 
-typedef Sexp (*IntrinsicFn)(SexpAllocator* alloc, Sexp args);
+typedef Sexp (*IntrinsicFn)(Environment* alloc, Sexp args);
 typedef struct Intrinsic {
     const char* name;
     IntrinsicFn fn;
@@ -25,7 +25,7 @@ typedef struct FFI_Func {
 } FFI_Func;
 
 typedef enum AtomType {
-    ATOM_NUMBER,
+    ATOM_NUMBER = 0,
     ATOM_BOOLEAN,
     ATOM_STRING,
     ATOM_SYMBOL,
@@ -77,7 +77,7 @@ typedef struct Local {
     Sexp sexp;
 } Local;
 
-struct SexpAllocator {
+struct Environment {
     Arena arena;
 
     u64 scope;
@@ -86,22 +86,22 @@ struct SexpAllocator {
     Local* locals;
 };
 
-SexpAllocator SexpAllocator_make(void);
-void SexpAllocator_free(SexpAllocator* alloc);
+Environment Environment_make(void);
+void Environment_free(Environment* alloc);
 
-Sexp SexpAllocator_alloc(SexpAllocator* alloc, Atom atom);
+Sexp Environment_alloc(Environment* alloc, Atom atom);
 
-void SexpAllocator_incScope(SexpAllocator* alloc);
-void SexpAllocator_decScope(SexpAllocator* alloc);
+void Environment_incScope(Environment* alloc);
+void Environment_decScope(Environment* alloc);
 
-void SexpAllocator_setLocal(SexpAllocator* alloc, String name, Sexp sexp);
-Sexp SexpAllocator_getLocal(SexpAllocator* alloc, String name);
+void Environment_setLocal(Environment* alloc, String name, Sexp sexp);
+Sexp Environment_getLocal(Environment* alloc, String name);
 
-String SexpAllocator_toString(SexpAllocator* alloc, Sexp node);
-void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp);
+String Environment_toString(Environment* alloc, Sexp node);
+void Environment_print(Environment* alloc, Sexp sexp);
 
-bool SexpAllocator_ConsTerminated(SexpAllocator* alloc, Sexp sexp);
-u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp);
+bool Environment_ConsTerminated(Environment* alloc, Sexp sexp);
+u64 Environment_ConsLen(Environment* alloc, Sexp sexp);
 
 #define ATOM_SET(sexp, ty)                                                     \
     *(sexp) = (Atom) {                                                         \
@@ -122,11 +122,11 @@ u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp);
 #define ATOM_VALUE(sexp, ty) ((sexp)->as.ty)
 
 #define ATOM_MAKE(allocator, ty)                                               \
-    (SexpAllocator_alloc((allocator), (Atom){ty, {0}}))
+    (Environment_alloc((allocator), (Atom){ty, {0}}))
 #define ATOM_MAKE_V(allocator, ty, value)                                      \
-    (SexpAllocator_alloc((allocator), (Atom){ty, {.ty = value}}))
+    (Environment_alloc((allocator), (Atom){ty, {.ty = value}}))
 #define ATOM_MAKE_S(allocator, ty, ...)                                        \
-    (SexpAllocator_alloc((allocator), (Atom){ty, {.ty = {__VA_ARGS__}}}))
+    (Environment_alloc((allocator), (Atom){ty, {.ty = {__VA_ARGS__}}}))
 
 #define ATOM_MAKE_NIL(allocator) (ATOM_MAKE(allocator, ATOM_NIL))
 #define ATOM_MAKE_CONS(allocator)                                              \
@@ -138,10 +138,10 @@ u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp);
 #define INTRINSIC(alloc, name, fn, argc)                                       \
     do {                                                                       \
         Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);       \
-        SexpAllocator_setLocal(alloc, STR(name), sexp);                        \
+        Environment_setLocal(alloc, STR(name), sexp);                        \
     } while (0);
 
 #define GLOBAL(alloc, name, value)                                             \
-    SexpAllocator_setLocal(alloc, STR(name), value)
+    Environment_setLocal(alloc, STR(name), value)
 
 #endif // WARLOCK_ATOM_H

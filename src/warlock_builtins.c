@@ -13,12 +13,12 @@
     }
 
 
-Sexp Sexp_Add(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Add(Environment *alloc, Sexp sexp) {
     Sexp result = ATOM_MAKE_V(alloc, ATOM_NUMBER, 0.0f);
 
     Sexp current = sexp;
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
         ATOM_VALUE(result, ATOM_NUMBER) += ATOM_VALUE(data, ATOM_NUMBER);
 
@@ -28,7 +28,7 @@ Sexp Sexp_Add(SexpAllocator *alloc, Sexp sexp) {
     return result;
 }
 
-Sexp Sexp_Subtract(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Subtract(Environment *alloc, Sexp sexp) {
     Sexp result = ATOM_MAKE_V(alloc, ATOM_NUMBER, 0.0f);
 
     Sexp current = sexp;
@@ -36,7 +36,7 @@ Sexp Sexp_Subtract(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(current, ATOM_CONS).data;
         ATOM_VALUE(result, ATOM_NUMBER) -= ATOM_VALUE(data, ATOM_NUMBER);
         
@@ -46,7 +46,7 @@ Sexp Sexp_Subtract(SexpAllocator *alloc, Sexp sexp) {
     return result;
 }
 
-Sexp Sexp_Multiply(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Multiply(Environment *alloc, Sexp sexp) {
     Sexp result = ATOM_MAKE_V(alloc, ATOM_NUMBER, 0.0f);
 
     Sexp current = sexp;
@@ -54,7 +54,7 @@ Sexp Sexp_Multiply(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(current, ATOM_CONS).data;
         ATOM_VALUE(result, ATOM_NUMBER) *= ATOM_VALUE(data, ATOM_NUMBER);
         
@@ -64,7 +64,7 @@ Sexp Sexp_Multiply(SexpAllocator *alloc, Sexp sexp) {
     return result;
 }
 
-Sexp Sexp_Divide(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Divide(Environment *alloc, Sexp sexp) {
     Sexp result = ATOM_MAKE_V(alloc, ATOM_NUMBER, 0.0f);
 
     Sexp current = sexp;
@@ -72,7 +72,7 @@ Sexp Sexp_Divide(SexpAllocator *alloc, Sexp sexp) {
 
     current = Sexp_Rest(alloc, current);
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = ATOM_VALUE(current, ATOM_CONS).data;
         ATOM_VALUE(result, ATOM_NUMBER) /= ATOM_VALUE(data, ATOM_NUMBER);
         
@@ -82,7 +82,7 @@ Sexp Sexp_Divide(SexpAllocator *alloc, Sexp sexp) {
     return result;  
 }
 
-Sexp Sexp_Equal(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Equal(Environment *alloc, Sexp sexp) {
     Sexp lhs = Sexp_First(alloc, sexp);
     sexp = Sexp_Rest(alloc, sexp);
     Sexp rhs = Sexp_First(alloc, sexp);
@@ -116,7 +116,7 @@ Sexp Sexp_Equal(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, result);
 }
 
-Sexp Sexp_Not(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Not(Environment *alloc, Sexp sexp) {
     Sexp arg = Sexp_First(alloc, sexp);
 
     EXPECTED_TYPE(arg, ATOM_BOOLEAN);
@@ -125,7 +125,7 @@ Sexp Sexp_Not(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, !v);  
 }
 
-Sexp Sexp_Greater(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Greater(Environment *alloc, Sexp sexp) {
     Sexp lhs = Sexp_First(alloc, sexp);
     sexp = Sexp_Rest(alloc, sexp);
     Sexp rhs = Sexp_First(alloc, sexp);
@@ -148,7 +148,7 @@ Sexp Sexp_Greater(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, result);
 }
 
-Sexp Sexp_Less(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Less(Environment *alloc, Sexp sexp) {
     Sexp lhs = Sexp_First(alloc, sexp);
     sexp = Sexp_Rest(alloc, sexp);
     Sexp rhs = Sexp_First(alloc, sexp);
@@ -171,12 +171,12 @@ Sexp Sexp_Less(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, result);
 }
 
-Sexp Sexp_And(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_And(Environment *alloc, Sexp sexp) {
     bool result = true;
 
     Sexp current = sexp;
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
         result = result && ATOM_VALUE(data, ATOM_BOOLEAN);
@@ -187,12 +187,12 @@ Sexp Sexp_And(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, result);
 }
 
-Sexp Sexp_Or(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Or(Environment *alloc, Sexp sexp) {
     bool result = true;
 
     Sexp current = sexp;
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
         result = result && ATOM_VALUE(data, ATOM_BOOLEAN);
@@ -203,13 +203,13 @@ Sexp Sexp_Or(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_V(alloc, ATOM_BOOLEAN, result);
 }
 
-Sexp Sexp_Println(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Println(Environment *alloc, Sexp sexp) {
     Sexp current = sexp;
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         Sexp data = Sexp_First(alloc, current);
 
-        SexpAllocator_print(alloc, data);
+        Environment_print(alloc, data);
         printf(" ");
 
         current = Sexp_Rest(alloc, current);
@@ -220,7 +220,7 @@ Sexp Sexp_Println(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_NIL(alloc);
 }
 
-Sexp Sexp_First(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_First(Environment *alloc, Sexp sexp) {
     if(ATOM_TY(sexp) == ATOM_CONS) {
         return ATOM_VALUE(sexp, ATOM_CONS).data;
     }
@@ -228,7 +228,7 @@ Sexp Sexp_First(SexpAllocator *alloc, Sexp sexp) {
     return sexp;
 }
 
-Sexp Sexp_Rest(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Rest(Environment *alloc, Sexp sexp) {
     if(ATOM_TY(sexp) == ATOM_CONS) {
         return ATOM_VALUE(sexp, ATOM_CONS).next;
     }
@@ -236,12 +236,12 @@ Sexp Sexp_Rest(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE_NIL(alloc);
 }
 
-Sexp Sexp_Len(SexpAllocator* alloc, Sexp sexp) {
+Sexp Sexp_Len(Environment* alloc, Sexp sexp) {
     Sexp result = ATOM_MAKE_V(alloc, ATOM_NUMBER, 0.0f);
 
     Sexp current = sexp;
 
-    while(!SexpAllocator_ConsTerminated(alloc, current)) {
+    while(!Environment_ConsTerminated(alloc, current)) {
         ATOM_VALUE(result, ATOM_NUMBER) += 1.0f;
         current = ATOM_VALUE(current, ATOM_CONS).next;
     }
@@ -249,17 +249,17 @@ Sexp Sexp_Len(SexpAllocator* alloc, Sexp sexp) {
     return result;
 }
 
-Sexp Sexp_Concat(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Concat(Environment *alloc, Sexp sexp) {
     return ATOM_MAKE(alloc, ATOM_NIL);
 }
 
-Sexp Sexp_Eval(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Eval(Environment *alloc, Sexp sexp) {
     Sexp arg = Sexp_First(alloc, sexp);
 
     return Eval_Atom(alloc, ATOM_VALUE(arg, ATOM_QUOTE));
 }
 
-Sexp Sexp_Import(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_Import(Environment *alloc, Sexp sexp) {
     Sexp arg = Sexp_First(alloc, sexp);
 
     if(ATOM_TY(arg) == ATOM_STRING) {
@@ -269,7 +269,7 @@ Sexp Sexp_Import(SexpAllocator *alloc, Sexp sexp) {
     return ATOM_MAKE(alloc, ATOM_NIL);
 }
 
-Sexp Sexp_If(SexpAllocator *alloc, Sexp sexp) {
+Sexp Sexp_If(Environment *alloc, Sexp sexp) {
     Sexp cond = Eval_Atom(alloc, Sexp_First(alloc, sexp));
     if(ATOM_TY(cond) != ATOM_BOOLEAN) {
         Warlock_error("condition must be a boolean");

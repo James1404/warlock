@@ -18,11 +18,11 @@ INCLUDE_DIRS := $(foreach dir,$(INCLUDE),-I$(dir))
 
 DEFINES = -D EXE_NAME=\"$(EXE)\"
 
-CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c99 $(DEFINES)\
+CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g -glldb -Og -std=c99 $(DEFINES)\
 		  $(INCLUDE_DIRS)\
 	      `llvm-config --cflags`
 
-CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g3 -Og -std=c++20 $(DEFINES) $(INCLUDE_DIRS)
+CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g -glldb -Og -std=c++20 $(DEFINES) $(INCLUDE_DIRS)
 
 LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libsan \
 	      `llvm-config --libs`

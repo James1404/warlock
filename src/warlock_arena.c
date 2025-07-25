@@ -47,7 +47,7 @@ void* Arena_malloc(Arena* arena, usize size) {
         page = newpage;        
     }
 
-    void* ptr = (void*)(usize)page->data[page->used];
+    void* ptr = (void*)(page->data + page->used);
     page->used += size;
     
     return ptr;

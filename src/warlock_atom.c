@@ -42,8 +42,8 @@ void List_push(List* list, Sexp sexp) {
 
 Sexp List_pop(List* list) { return list->data[list->len--]; }
 
-SexpAllocator SexpAllocator_make(void) {
-    SexpAllocator result = {
+Environment Environment_make(void) {
+    Environment result = {
         .arena = Arena_make(),
 
         .localsLen = 0,
@@ -54,17 +54,19 @@ SexpAllocator SexpAllocator_make(void) {
     return result;
 }
 
-void SexpAllocator_free(SexpAllocator* alloc) {
+void Environment_free(Environment* alloc) {
     Arena_free(&alloc->arena);
     free(alloc->locals);
 }
 
-Sexp SexpAllocator_alloc(SexpAllocator* alloc, Atom atom) {
-    return Arena_malloc(&alloc->arena, sizeof(Atom));
+Sexp Environment_alloc(Environment* alloc, Atom atom) {
+    Sexp ptr = malloc(sizeof(Atom));
+    *ptr = atom;
+    return ptr;
 }
 
-void SexpAllocator_incScope(SexpAllocator* alloc) { alloc->scope++; }
-void SexpAllocator_decScope(SexpAllocator* alloc) {
+void Environment_incScope(Environment* alloc) { alloc->scope++; }
+void Environment_decScope(Environment* alloc) {
     alloc->scope--;
 
     while (alloc->locals[alloc->localsLen - 1].scope > alloc->scope) {
@@ -72,7 +74,7 @@ void SexpAllocator_decScope(SexpAllocator* alloc) {
     }
 }
 
-void SexpAllocator_setLocal(SexpAllocator* alloc, String name, Sexp sexp) {
+void Environment_setLocal(Environment* alloc, String name, Sexp sexp) {
     if (!alloc->locals) {
         alloc->localsLen = 0;
         alloc->localsAllocated = 8;
@@ -93,7 +95,7 @@ void SexpAllocator_setLocal(SexpAllocator* alloc, String name, Sexp sexp) {
     };
 }
 
-Sexp SexpAllocator_getLocal(SexpAllocator* alloc, String name) {
+Sexp Environment_getLocal(Environment* alloc, String name) {
     for (i64 i = alloc->localsLen - 1; i >= 0; i--) {
         Local entry = alloc->locals[i];
 
@@ -107,7 +109,7 @@ Sexp SexpAllocator_getLocal(SexpAllocator* alloc, String name) {
     return ATOM_MAKE(alloc, ATOM_NIL);
 }
 
-String SexpAllocator_toString(SexpAllocator* alloc, Sexp node) {
+String Environment_toString(Environment* alloc, Sexp node) {
     switch (ATOM_TY(node)) {
     case ATOM_NUMBER:
         return STR("NUMBER");
@@ -138,7 +140,7 @@ String SexpAllocator_toString(SexpAllocator* alloc, Sexp node) {
     return STR("Invalid String");
 }
 
-void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
+void Environment_print(Environment* alloc, Sexp sexp) {
     switch (ATOM_TY(sexp)) {
     case ATOM_NUMBER: {
         printf("%Lf", ATOM_VALUE(sexp, ATOM_NUMBER));
@@ -166,16 +168,17 @@ void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
 
         printf("fn ");
 
-        SexpAllocator_print(alloc, fn.args);
+        Environment_print(alloc, fn.args);
 
         printf(" -> ");
 
-        SexpAllocator_print(alloc, fn.body);
+        Environment_print(alloc, fn.body);
 
         printf(")");
     } break;
     case ATOM_INTRINSIC: {
-        printf("#intrinsic");
+        Intrinsic intrinsic = ATOM_VALUE(sexp, ATOM_INTRINSIC);
+        printf("#intrinsic %s, argc: %li", intrinsic.name, intrinsic.argc);
     } break;
     case ATOM_FFI: {
         printf("#ffi");
@@ -185,10 +188,12 @@ void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
 
         Sexp current = sexp;
 
-        while (ATOM_TY(sexp) != ATOM_NIL) {
+        while (ATOM_TY(current) != ATOM_NIL) {
             Sexp head = Sexp_First(alloc, current);
 
-            SexpAllocator_print(alloc, head);
+            Environment_print(alloc, head);
+
+            printf(" ");
 
             current = Sexp_Rest(alloc, current);
         }
@@ -202,7 +207,7 @@ void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
 
         for (i32 i = 0; i < list.len; i++) {
             Sexp value = list.data[i];
-            SexpAllocator_print(alloc, value);
+            Environment_print(alloc, value);
         }
 
         printf(")");
@@ -210,7 +215,7 @@ void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
 
     case ATOM_QUOTE: {
         printf("'");
-        SexpAllocator_print(alloc, ATOM_VALUE(sexp, ATOM_QUOTE));
+        Environment_print(alloc, ATOM_VALUE(sexp, ATOM_QUOTE));
     } break;
     case ATOM_NIL: {
         printf("nil");
@@ -218,16 +223,16 @@ void SexpAllocator_print(SexpAllocator* alloc, Sexp sexp) {
     }
 }
 
-bool SexpAllocator_ConsTerminated(SexpAllocator* alloc, Sexp sexp) {
+bool Environment_ConsTerminated(Environment* alloc, Sexp sexp) {
     return ATOM_TY(sexp) == ATOM_NIL;
 }
 
-u64 SexpAllocator_ConsLen(SexpAllocator* alloc, Sexp sexp) {
+u64 Environment_ConsLen(Environment* alloc, Sexp sexp) {
     u64 result = 0;
 
     Sexp current = sexp;
 
-    while (!SexpAllocator_ConsTerminated(alloc, current)) {
+    while (!Environment_ConsTerminated(alloc, current)) {
         result++;
         current = ATOM_VALUE(current, ATOM_CONS).next;
     }
