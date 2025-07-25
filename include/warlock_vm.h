@@ -5,7 +5,7 @@
 #include "warlock_opcodes.h"
 
 typedef struct {
-    Opcode *code;
+    Opcode* code;
     u64 length, allocated;
 } Chunk;
 
@@ -25,4 +25,4 @@ void VM_run(VM* vm, Chunk* code);
 void VM_push(VM* vm, Atom atom);
 Atom VM_pop(VM* vm);
 
-#endif//WARLOCK_VM_H
+#endif // WARLOCK_VM_H

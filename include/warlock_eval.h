@@ -7,6 +7,7 @@ Sexp Eval_run(SexpAllocator* alloc, Sexp sexp);
 
 Sexp Eval_Atom(SexpAllocator *alloc, Sexp sexp);
 Sexp Eval_Cons(SexpAllocator *alloc, Sexp sexp);
+Sexp Eval_List(SexpAllocator *alloc, Sexp sexp);
 
 Sexp Eval_Fn(SexpAllocator *alloc, Sexp sexp);
 Sexp Eval_Def(SexpAllocator *alloc, Sexp sexp);

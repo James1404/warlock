@@ -212,7 +212,7 @@ static Sexp Reader_ReadList(Reader* reader, SexpAllocator* alloc) {
 
             Sexp data = Reader_ReadAtom(reader, alloc);
             Sexp next = ATOM_MAKE_NIL(alloc);
-            ATOM_SET_S(alloc, current, ATOM_CONS, data, next);
+            ATOM_SET_S(current, ATOM_CONS, data, next);
 
             current = Sexp_Rest(alloc, current);
         
@@ -232,7 +232,7 @@ static Sexp Reader_ReadTopLevel(Reader* reader, SexpAllocator* alloc) {
     while(!Reader_eof(reader)) {
         Sexp data = Reader_ReadAtom(reader, alloc);
         Sexp next = ATOM_MAKE_NIL(alloc);
-        ATOM_SET_S(alloc, current, ATOM_CONS, data, next);
+        ATOM_SET_S(current, ATOM_CONS, data, next);
         
         current = Sexp_Rest(alloc, current);
         

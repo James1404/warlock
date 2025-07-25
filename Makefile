@@ -1,5 +1,6 @@
 CC = cc
 CPP = c++
+DBG = lldb
 
 EXE = warlock
 
@@ -48,6 +49,9 @@ help: $(BUILD_DIR)/$(EXE)
 version: $(BUILD_DIR)/$(EXE)
 	@(cd $(BUILD_DIR) && ./$(EXE) version)
 
+debug: $(BUILD_DIR)/$(EXE)
+	@$(DBG) $(BUILD_DIR)/$(EXE)
+
 -include $(DEPS)
 
 $(CACHE_DIR)/%.o: $(SRC_DIR)/%.c | $(CACHE_DIR)
@@ -80,4 +84,4 @@ clean:
 	@unlink $(BUILD_DIR)/$(STD_DIR)
 	@rm -rf $(BUILD_DIR)/
 
-.PHONY: clean run
+.PHONY: run repl help version debug
