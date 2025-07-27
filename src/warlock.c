@@ -11,80 +11,74 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/*
-Atom warlock_concat(List args) {
-    Atom arg = args.data[0];
+void Warlock_builtin(Environment* env) {
+    INTRINSIC(env, "def", Sexp_Def, -1, false);
+    INTRINSIC(env, "fn", Sexp_Fn, -1, false);
+    INTRINSIC(env, "quote", Sexp_Quote, -1, false);
 
-    if(arg.ty != ATOM_LIST) return arg;
+    INTRINSIC(env, "print_env", Sexp_PrintEnv, 0, true);
 
-    return GET_ATOM_LIST(arg).data[GET_ATOM_LIST(arg).length - 1];
-}
-*/
+    INTRINSIC(env, "+", Sexp_Add, -1, true);
+    INTRINSIC(env, "-", Sexp_Subtract, -1, true);
+    INTRINSIC(env, "*", Sexp_Multiply, -1, true);
+    INTRINSIC(env, "/", Sexp_Divide, -1, true);
 
-void Warlock_builtin(Environment* alloc) {
-    INTRINSIC(alloc, "+", Sexp_Add, -1);
-    INTRINSIC(alloc, "-", Sexp_Subtract, -1);
-    INTRINSIC(alloc, "*", Sexp_Multiply, -1);
-    INTRINSIC(alloc, "/", Sexp_Divide, -1);
+    INTRINSIC(env, "=", Sexp_Equal, 2, true);
+    INTRINSIC(env, "!", Sexp_Not, 2, true);
+    INTRINSIC(env, ">", Sexp_Greater, 2, true);
+    INTRINSIC(env, "<", Sexp_Less, 2, true);
 
-    INTRINSIC(alloc, "=", Sexp_Equal, 2);
-    INTRINSIC(alloc, "!", Sexp_Not, 2);
-    INTRINSIC(alloc, ">", Sexp_Greater, 2);
-    INTRINSIC(alloc, "<", Sexp_Less, 2);
+    INTRINSIC(env, "and", Sexp_And, 2, true);
+    INTRINSIC(env, "or", Sexp_Or, 2, true);
 
-    INTRINSIC(alloc, "and", Sexp_And, 2);
-    INTRINSIC(alloc, "or", Sexp_Or, 2);
+    GLOBAL(env, "true", ATOM_MAKE_V(env, ATOM_BOOLEAN, true));
+    GLOBAL(env, "false", ATOM_MAKE_V(env, ATOM_BOOLEAN, false));
 
-    GLOBAL(alloc, "true", ATOM_MAKE_V(alloc, ATOM_BOOLEAN, true));
-    GLOBAL(alloc, "false", ATOM_MAKE_V(alloc, ATOM_BOOLEAN, false));
+    GLOBAL(env, "nil", ATOM_MAKE(env, ATOM_NIL));
 
-    GLOBAL(alloc, "nil", ATOM_MAKE(alloc, ATOM_NIL));
+    INTRINSIC(env, "println", Sexp_Println, -1, true);
 
-    INTRINSIC(alloc, "println", Sexp_Println, -1);
+    INTRINSIC(env, "import", Sexp_Import, 1, true);
 
-    INTRINSIC(alloc, "import", Sexp_Import, 1);
+    INTRINSIC(env, "eval", Sexp_Eval, 1, true);
 
-    INTRINSIC(alloc, "eval", Sexp_Eval, 1);
+    INTRINSIC(env, "first", Sexp_First, 1, true);
+    INTRINSIC(env, "rest", Sexp_Rest, 1, true);
 
-    INTRINSIC(alloc, "first", Sexp_First, 1);
-    INTRINSIC(alloc, "rest", Sexp_Rest, 1);
-
-    INTRINSIC(alloc, "quote", Sexp_Rest, 1);
-    INTRINSIC(alloc, "define", Sexp_Rest, 2);
-    INTRINSIC(alloc, "if", Sexp_Rest, 3);
-    INTRINSIC(alloc, "lambda", Sexp_Rest, 2);
+    INTRINSIC(env, "if", Sexp_If, 3, true);
 }
 
-Sexp Warlock_run(Environment* alloc, String src) {
+Sexp Warlock_run(Environment* env, String src) {
     Reader reader = Reader_make(src);
 
-    Reader_run(&reader, alloc);
+    Reader_run(&reader, env);
 
-    if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
+    if(Warlock_foundError()) return ATOM_MAKE_NIL(env);
 
-    Sexp result = ATOM_MAKE_NIL(alloc);
+    Sexp result = ATOM_MAKE_NIL(env);
 
     for (i32 i = 0; i < reader.linesLen; i++) {
         Sexp line = reader.lines[i];
-        result = Eval_run(alloc, line);
+        result = Eval_run(env, line);
     }
 
-    if(Warlock_foundError()) return ATOM_MAKE_NIL(alloc);
+    if(Warlock_foundError()) return ATOM_MAKE_NIL(env);
 
     Reader_free(&reader);
 
     return result;
 }
 
-Sexp Warlock_run_file(Environment* alloc, String path) {
-    String nullterminated;
-    STR_CPY_ALLOC_NULL(nullterminated, path);
+Sexp Warlock_run_file(Environment* env, String path) {
+    String nullterminated = String_copy_null(path);
     
     FILE* file = fopen(nullterminated.raw, "r");
 
     if(!file) {
         Warlock_error("Could not find file '%.*s'", path.len, path.raw);
-        return ATOM_MAKE_NIL(alloc);
+        fclose(file);
+        String_free(&nullterminated);
+        return ATOM_MAKE_NIL(env);
     }
 
     fseek(file, 0, SEEK_END);
@@ -96,15 +90,15 @@ Sexp Warlock_run_file(Environment* alloc, String path) {
     if(fread(buffer, 1, len, file) != len) {
         Warlock_error("Failed to read file '%.*s'", path.len, path.raw);
         fclose(file);
-        return ATOM_MAKE_NIL(alloc);
+        return ATOM_MAKE_NIL(env);
     }
     
     fclose(file);
 
-    Sexp result = Warlock_run(alloc, (String) { buffer, len });
+    Sexp result = Warlock_run(env, (String) { buffer, len });
 
     free(buffer);
-    STR_FREE(nullterminated);
+    String_free(&nullterminated);
 
     return result;
 }

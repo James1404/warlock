@@ -20,12 +20,14 @@ DEFINES = -D EXE_NAME=\"$(EXE)\"
 
 CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g -glldb -Og -std=c99 $(DEFINES)\
 		  $(INCLUDE_DIRS)\
-	      `llvm-config --cflags`
+	      `llvm-config --cflags`\
+		  `pkg-config --cflags libeditline`
 
 CPPFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g -glldb -Og -std=c++20 $(DEFINES) $(INCLUDE_DIRS)
 
 LDFLAGS = -fsanitize=address -fsanitize-trap=all -static-libsan \
-	      `llvm-config --libs`
+	      `llvm-config --libs`\
+		  `pkg-config --libs libeditline`
 
 SRC := $(shell find $(SRC_DIR)/ -type f \( -iname \*.c -o -iname \*.cpp \))
 OBJ := $(addprefix $(CACHE_DIR)/, $(addsuffix .o,$(basename $(notdir $(SRC)))))
@@ -42,9 +44,11 @@ run: $(BUILD_DIR)/$(EXE)
 repl: $(BUILD_DIR)/$(EXE)
 	@(cd $(BUILD_DIR) && ./$(EXE) repl)
 
+tests: $(BUILD_DIR)/$(EXE)
+	@(cd $(BUILD_DIR) && ./$(EXE) test)
+
 help: $(BUILD_DIR)/$(EXE)
 	@(cd $(BUILD_DIR) && ./$(EXE) help)
-
 
 version: $(BUILD_DIR)/$(EXE)
 	@(cd $(BUILD_DIR) && ./$(EXE) version)
@@ -84,4 +88,4 @@ clean:
 	@unlink $(BUILD_DIR)/$(STD_DIR)
 	@rm -rf $(BUILD_DIR)/
 
-.PHONY: run repl help version debug
+.PHONY: run repl tests help version debug

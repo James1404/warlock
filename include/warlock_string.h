@@ -3,37 +3,34 @@
 
 #include "warlock_common.h"
 
+#include <stdlib.h>
 #include <string.h>
 
 #define STR(x) ((String){.raw = x, .len = strlen(x)})
 #define STR_ALLOC(l) ((String){.raw = malloc(l), .len = l});
-#define STR_CPY_ALLOC(dst, src)                                                \
-  do {                                                                         \
-    dst = STR_ALLOC((src).len);                                                \
-    strncpy((dst).raw, (src).raw, (src).len);                                  \
-  } while (0)
-#define STR_CPY_ALLOC_NULL(dst, src)                                           \
-  do {                                                                         \
-    dst = STR_ALLOC((src).len + 1);                                            \
-    strncpy((dst).raw, (src).raw, (src).len);                                  \
-    dst.raw[(src).len] = '\0';                                                 \
-  } while (0)
 
-#define STR_FREE(str)                                                          \
-  do {                                                                         \
-    free(str.raw);                                                             \
-  } while (0)
-
-typedef struct {
+typedef struct String {
     char* raw;
     i32 len;
 } String;
 
-#define STR_CMP(lhs, rhs) (strncmp((lhs).raw, (rhs).raw, (lhs).len) == 0)
-#define STR_CMP_WITH_RAW(lhs, rhs) (strncmp((lhs).raw, (rhs), strlen(rhs)) == 0)
-#define STR_CMP_RAWS(lhs, rhs) (strcmp((lhs), (rhs)) == 0)
+String String_from(const char* str);
+void String_free(String* str);
 
-#define STR_IDX(src, i) ((src).raw[i])
-#define STR_SUBSTR(src, start, len) ((String){(src).raw + start, len})
+bool String_cmp(String lhs, String rhs);
+bool String_cmp_with_raw(String lhs, const char* rhs);
 
-#endif//WARLOCK_STRING_H
+char String_idx(String str, i32 idx);
+String String_substr(String str, i32 start, i32 len);
+
+String String_copy(String str);
+String String_copy_null(String str);
+
+typedef struct StringView {
+    char* raw;
+    i32 len;
+} StringView;
+
+StringView StringView_make(const char* str);
+
+#endif // WARLOCK_STRING_H

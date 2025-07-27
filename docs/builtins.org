@@ -1,0 +1,43 @@
+* Builtin Functions
+
+** fn
+
+** def
+
+** quote
+
+** +
+
+** -
+
+** *
+
+** /
+
+** =
+
+** !=
+
+** >
+
+** <
+
+** and
+
+** or
+
+** println
+
+** first
+
+** rest
+
+** len
+
+** concat
+
+** eval
+
+** import
+
+** if

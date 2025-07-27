@@ -17,6 +17,7 @@ List List_make(void) {
         .len = 0,
     };
 }
+
 void List_free(List* list) {
     free(list->data);
     list->data = NULL;
@@ -54,62 +55,62 @@ Environment Environment_make(void) {
     return result;
 }
 
-void Environment_free(Environment* alloc) {
-    Arena_free(&alloc->arena);
-    free(alloc->locals);
+void Environment_free(Environment* env) {
+    Arena_free(&env->arena);
+    free(env->locals);
 }
 
-Sexp Environment_alloc(Environment* alloc, Atom atom) {
-    Sexp ptr = malloc(sizeof(Atom));
+Sexp Environment_alloc(Environment* env, Atom atom) {
+    Sexp ptr = Arena_malloc(&env->arena, sizeof(Atom));
     *ptr = atom;
     return ptr;
 }
 
-void Environment_incScope(Environment* alloc) { alloc->scope++; }
-void Environment_decScope(Environment* alloc) {
-    alloc->scope--;
+void Environment_incScope(Environment* env) { env->scope++; }
+void Environment_decScope(Environment* env) {
+    env->scope--;
 
-    while (alloc->locals[alloc->localsLen - 1].scope > alloc->scope) {
-        alloc->localsLen--;
+    while (env->locals[env->localsLen - 1].scope > env->scope) {
+        env->localsLen--;
     }
 }
 
-void Environment_setLocal(Environment* alloc, String name, Sexp sexp) {
-    if (!alloc->locals) {
-        alloc->localsLen = 0;
-        alloc->localsAllocated = 8;
-        alloc->locals = malloc(sizeof(Local) * alloc->localsAllocated);
+void Environment_setLocal(Environment* env, String name, Sexp sexp) {
+    if (!env->locals) {
+        env->localsLen = 0;
+        env->localsAllocated = 8;
+        env->locals = malloc(sizeof(Local) * env->localsAllocated);
     }
 
-    if (alloc->localsLen >= alloc->localsAllocated) {
-        alloc->localsAllocated *= 2;
-        alloc->locals =
-            realloc(alloc->locals, sizeof(Local) * alloc->localsAllocated);
+    if (env->localsLen >= env->localsAllocated) {
+        env->localsAllocated *= 2;
+        env->locals =
+            realloc(env->locals, sizeof(Local) * env->localsAllocated);
     }
 
-    Local* local = alloc->locals + (alloc->localsLen++);
+    Local* local = env->locals + (env->localsLen++);
     *local = (Local){
-        .scope = alloc->scope,
+        .scope = env->scope,
         .sexp = sexp,
         .name = name,
     };
 }
 
-Sexp Environment_getLocal(Environment* alloc, String name) {
-    for (i64 i = alloc->localsLen - 1; i >= 0; i--) {
-        Local entry = alloc->locals[i];
+Sexp Environment_getLocal(Environment* env, String name) {
+    for (i64 i = env->localsLen - 1; i >= 0; i--) {
+        Local entry = env->locals[i];
 
-        if (STR_CMP(entry.name, name)) {
+        if (String_cmp(entry.name, name)) {
             return entry.sexp;
         }
     }
 
-    Warlock_error("Could not find symbol '%.*s' in type environment", name.len,
+    Warlock_error("Could not find symbol '%.*s' in environment", name.len,
                   name.raw);
-    return ATOM_MAKE(alloc, ATOM_NIL);
+    return ATOM_MAKE(env, ATOM_NIL);
 }
 
-String Environment_toString(Environment* alloc, Sexp node) {
+String Environment_toString(Environment* env, Sexp node) {
     switch (ATOM_TY(node)) {
     case ATOM_NUMBER:
         return STR("NUMBER");
@@ -140,7 +141,7 @@ String Environment_toString(Environment* alloc, Sexp node) {
     return STR("Invalid String");
 }
 
-void Environment_print(Environment* alloc, Sexp sexp) {
+void Environment_print(Environment* env, Sexp sexp) {
     switch (ATOM_TY(sexp)) {
     case ATOM_NUMBER: {
         printf("%Lf", ATOM_VALUE(sexp, ATOM_NUMBER));
@@ -168,11 +169,11 @@ void Environment_print(Environment* alloc, Sexp sexp) {
 
         printf("fn ");
 
-        Environment_print(alloc, fn.args);
+        Environment_print(env, fn.args);
 
         printf(" -> ");
 
-        Environment_print(alloc, fn.body);
+        Environment_print(env, fn.body);
 
         printf(")");
     } break;
@@ -189,13 +190,16 @@ void Environment_print(Environment* alloc, Sexp sexp) {
         Sexp current = sexp;
 
         while (ATOM_TY(current) != ATOM_NIL) {
-            Sexp head = Sexp_First(alloc, current);
+            Sexp head = Sexp_First(env, current);
 
-            Environment_print(alloc, head);
+            Environment_print(env, head);
 
-            printf(" ");
+            if (ATOM_TY(current) == ATOM_CONS &&
+                ATOM_VALUE(current, ATOM_CONS).next->ty != ATOM_NIL) {
+                printf(" ");
+            }
 
-            current = Sexp_Rest(alloc, current);
+            current = Sexp_Rest(env, current);
         }
 
         printf(")");
@@ -207,7 +211,7 @@ void Environment_print(Environment* alloc, Sexp sexp) {
 
         for (i32 i = 0; i < list.len; i++) {
             Sexp value = list.data[i];
-            Environment_print(alloc, value);
+            Environment_print(env, value);
         }
 
         printf(")");
@@ -215,7 +219,7 @@ void Environment_print(Environment* alloc, Sexp sexp) {
 
     case ATOM_QUOTE: {
         printf("'");
-        Environment_print(alloc, ATOM_VALUE(sexp, ATOM_QUOTE));
+        Environment_print(env, ATOM_VALUE(sexp, ATOM_QUOTE));
     } break;
     case ATOM_NIL: {
         printf("nil");
@@ -223,16 +227,16 @@ void Environment_print(Environment* alloc, Sexp sexp) {
     }
 }
 
-bool Environment_ConsTerminated(Environment* alloc, Sexp sexp) {
+bool Environment_ConsTerminated(Environment* env, Sexp sexp) {
     return ATOM_TY(sexp) == ATOM_NIL;
 }
 
-u64 Environment_ConsLen(Environment* alloc, Sexp sexp) {
+u64 Environment_ConsLen(Environment* env, Sexp sexp) {
     u64 result = 0;
 
     Sexp current = sexp;
 
-    while (!Environment_ConsTerminated(alloc, current)) {
+    while (!Environment_ConsTerminated(env, current)) {
         result++;
         current = ATOM_VALUE(current, ATOM_CONS).next;
     }

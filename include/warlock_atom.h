@@ -13,11 +13,12 @@ typedef struct Fn {
     Sexp body;
 } Fn;
 
-typedef Sexp (*IntrinsicFn)(Environment* alloc, Sexp args);
+typedef Sexp (*IntrinsicFn)(Environment* env, Sexp args);
 typedef struct Intrinsic {
     const char* name;
     IntrinsicFn fn;
     i64 argc;
+    bool eval_all;
 } Intrinsic;
 
 typedef struct FFI_Func {
@@ -87,21 +88,21 @@ struct Environment {
 };
 
 Environment Environment_make(void);
-void Environment_free(Environment* alloc);
+void Environment_free(Environment* env);
 
-Sexp Environment_alloc(Environment* alloc, Atom atom);
+Sexp Environment_alloc(Environment* env, Atom atom);
 
-void Environment_incScope(Environment* alloc);
-void Environment_decScope(Environment* alloc);
+void Environment_incScope(Environment* env);
+void Environment_decScope(Environment* env);
 
-void Environment_setLocal(Environment* alloc, String name, Sexp sexp);
-Sexp Environment_getLocal(Environment* alloc, String name);
+void Environment_setLocal(Environment* env, String name, Sexp sexp);
+Sexp Environment_getLocal(Environment* env, String name);
 
-String Environment_toString(Environment* alloc, Sexp node);
-void Environment_print(Environment* alloc, Sexp sexp);
+String Environment_toString(Environment* env, Sexp node);
+void Environment_print(Environment* env, Sexp sexp);
 
-bool Environment_ConsTerminated(Environment* alloc, Sexp sexp);
-u64 Environment_ConsLen(Environment* alloc, Sexp sexp);
+bool Environment_ConsTerminated(Environment* env, Sexp sexp);
+u64 Environment_ConsLen(Environment* env, Sexp sexp);
 
 #define ATOM_SET(sexp, ty)                                                     \
     *(sexp) = (Atom) {                                                         \
@@ -121,27 +122,24 @@ u64 Environment_ConsLen(Environment* alloc, Sexp sexp);
 #define ATOM_TY(sexp) ((sexp)->ty)
 #define ATOM_VALUE(sexp, ty) ((sexp)->as.ty)
 
-#define ATOM_MAKE(allocator, ty)                                               \
-    (Environment_alloc((allocator), (Atom){ty, {0}}))
-#define ATOM_MAKE_V(allocator, ty, value)                                      \
-    (Environment_alloc((allocator), (Atom){ty, {.ty = value}}))
-#define ATOM_MAKE_S(allocator, ty, ...)                                        \
-    (Environment_alloc((allocator), (Atom){ty, {.ty = {__VA_ARGS__}}}))
+#define ATOM_MAKE(env, ty) (Environment_alloc((env), (Atom){ty, {0}}))
+#define ATOM_MAKE_V(env, ty, value)                                            \
+    (Environment_alloc((env), (Atom){ty, {.ty = value}}))
+#define ATOM_MAKE_S(env, ty, ...)                                              \
+    (Environment_alloc((env), (Atom){ty, {.ty = {__VA_ARGS__}}}))
 
-#define ATOM_MAKE_NIL(allocator) (ATOM_MAKE(allocator, ATOM_NIL))
-#define ATOM_MAKE_CONS(allocator)                                              \
-    (ATOM_MAKE_S(allocator, ATOM_CONS, ATOM_MAKE_NIL(allocator),               \
-                 ATOM_MAKE_NIL(allocator)))
-#define ATOM_MAKE_LIST(allocator)                                              \
-    (ATOM_MAKE_V(allocator, ATOM_LIST, List_make()))
+#define ATOM_MAKE_NIL(env) (ATOM_MAKE(env, ATOM_NIL))
+#define ATOM_MAKE_CONS(env)                                                    \
+    (ATOM_MAKE_S(env, ATOM_CONS, ATOM_MAKE_NIL(env), ATOM_MAKE_NIL(env)))
+#define ATOM_MAKE_LIST(env) (ATOM_MAKE_V(env, ATOM_LIST, List_make()))
 
-#define INTRINSIC(alloc, name, fn, argc)                                       \
+#define INTRINSIC(env, name, fn, argc, eval_all)                               \
     do {                                                                       \
-        Sexp sexp = ATOM_MAKE_S(alloc, ATOM_INTRINSIC, name, &fn, argc);       \
-        Environment_setLocal(alloc, STR(name), sexp);                        \
+        Sexp sexp =                                                            \
+            ATOM_MAKE_S(env, ATOM_INTRINSIC, name, &fn, argc, eval_all);       \
+        Environment_setLocal(env, STR(name), sexp);                            \
     } while (0);
 
-#define GLOBAL(alloc, name, value)                                             \
-    Environment_setLocal(alloc, STR(name), value)
+#define GLOBAL(env, name, value) Environment_setLocal(env, STR(name), value)
 
 #endif // WARLOCK_ATOM_H

@@ -16,6 +16,6 @@ typedef struct {
 Reader Reader_make(String src);
 void Reader_free(Reader* reader);
 
-void Reader_run(Reader* reader, Environment* alloc);
+void Reader_run(Reader* reader, Environment* env);
 
 #endif//WARLOCK_READER_H

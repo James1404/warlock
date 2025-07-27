@@ -18,7 +18,7 @@ static char Reader_current(Reader* reader) {
         return '\0';
     }
 
-    return STR_IDX(reader->src, reader->position);
+    return String_idx(reader->src, reader->position);
 }
 
 static void Reader_advance(Reader* reader) {
@@ -130,9 +130,9 @@ static void Reader_SkipAllWhitespace(Reader* reader) {
         ;
 }
 
-static Sexp Reader_ReadList(Reader* reader, Environment* alloc);
+static Sexp Reader_ReadList(Reader* reader, Environment* env);
 
-static Sexp Reader_ReadSymbol(Reader* reader, Environment* alloc) {
+static Sexp Reader_ReadSymbol(Reader* reader, Environment* env) {
     Reader_SkipAllWhitespace(reader);
 
     char c = Reader_current(reader);
@@ -144,16 +144,16 @@ static Sexp Reader_ReadSymbol(Reader* reader, Environment* alloc) {
             c = Reader_current(reader);
         }
 
-        String text = STR_SUBSTR(reader->src, reader->start,
+        String text = String_substr(reader->src, reader->start,
                                  reader->position - reader->start);
 
-        return ATOM_MAKE_V(alloc, ATOM_SYMBOL, text);
+        return ATOM_MAKE_V(env, ATOM_SYMBOL, text);
     }
 
-    return ATOM_MAKE_NIL(alloc);
+    return ATOM_MAKE_NIL(env);
 }
 
-static Sexp Reader_ReadAtom(Reader* reader, Environment* alloc) {
+static Sexp Reader_ReadAtom(Reader* reader, Environment* env) {
     Reader_SkipAllWhitespace(reader);
 
     char c = Reader_current(reader);
@@ -162,13 +162,13 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* alloc) {
     if (c == ')') {
         Warlock_error("Unexpected closing parenthesis ')'");
         Reader_advance(reader);
-        return ATOM_MAKE_NIL(alloc);
+        return ATOM_MAKE_NIL(env);
     }
 
     if (c == '\'') {
         Reader_advance(reader);
-        Sexp atom = Reader_ReadAtom(reader, alloc);
-        return ATOM_MAKE_V(alloc, ATOM_QUOTE, atom);
+        Sexp atom = Reader_ReadAtom(reader, env);
+        return ATOM_MAKE_V(env, ATOM_QUOTE, atom);
         ;
     }
 
@@ -178,7 +178,7 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* alloc) {
             if (Reader_eof(reader)) {
                 Warlock_error(
                     "Reached end-of-file without finding '\"' character");
-                return ATOM_MAKE_NIL(alloc);
+                return ATOM_MAKE_NIL(env);
             }
         } while (Reader_current(reader) != '"');
 
@@ -187,8 +187,8 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* alloc) {
 
         Reader_advance(reader);
 
-        String text = STR_SUBSTR(reader->src, strStart, strLength);
-        return ATOM_MAKE_V(alloc, ATOM_STRING, text);
+        String text = String_substr(reader->src, strStart, strLength);
+        return ATOM_MAKE_V(env, ATOM_STRING, text);
     }
 
     if (isNumber(c)) {
@@ -197,29 +197,29 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* alloc) {
             c = Reader_current(reader);
         }
 
-        String text = STR_SUBSTR(reader->src, reader->start,
+        String text = String_substr(reader->src, reader->start,
                                  reader->position - reader->start);
 
-        return ATOM_MAKE_V(alloc, ATOM_NUMBER, strtod(text.raw, NULL));
+        return ATOM_MAKE_V(env, ATOM_NUMBER, strtod(text.raw, NULL));
     }
 
     if (c == '(') {
-        return Reader_ReadList(reader, alloc);
+        return Reader_ReadList(reader, env);
     }
 
     if (isSymbolCharStart(c)) {
-        return Reader_ReadSymbol(reader, alloc);
+        return Reader_ReadSymbol(reader, env);
     }
 
-    printf("Error invalid character [Line: %lu, Pos: %lu] :: '%02x'\n",
-           reader->line, reader->line_pos, (unsigned char)c);
-    return ATOM_MAKE_NIL(alloc);
+    printf("Error invalid character [Line: %lu, Pos: %lu] :: '%c'\n",
+           reader->line, reader->line_pos, c);
+    return ATOM_MAKE_NIL(env);
 }
 
-static Sexp Reader_ReadList(Reader* reader, Environment* alloc) {
+static Sexp Reader_ReadList(Reader* reader, Environment* env) {
     Reader_SkipAllWhitespace(reader);
 
-    Sexp start = ATOM_MAKE_NIL(alloc);
+    Sexp start = ATOM_MAKE_NIL(env);
     Sexp current = start;
 
     if (Reader_match(reader, '(')) {
@@ -227,14 +227,14 @@ static Sexp Reader_ReadList(Reader* reader, Environment* alloc) {
             if (Reader_eof(reader)) {
                 Warlock_error(
                     "Reached end-of-file without finding ')' character");
-                return ATOM_MAKE_NIL(alloc);
+                return ATOM_MAKE_NIL(env);
             }
 
-            Sexp data = Reader_ReadAtom(reader, alloc);
-            Sexp next = ATOM_MAKE_NIL(alloc);
+            Sexp data = Reader_ReadAtom(reader, env);
+            Sexp next = ATOM_MAKE_NIL(env);
             ATOM_SET_S(current, ATOM_CONS, data, next);
 
-            current = Sexp_Rest(alloc, current);
+            current = Sexp_Rest(env, current);
 
             Reader_SkipAllWhitespace(reader);
         }
@@ -243,17 +243,17 @@ static Sexp Reader_ReadList(Reader* reader, Environment* alloc) {
     return start;
 }
 
-static void Reader_ReadTopLevel(Reader* reader, Environment* alloc) {
+static void Reader_ReadTopLevel(Reader* reader, Environment* env) {
     Reader_SkipAllWhitespace(reader);
 
     while (!Reader_eof(reader)) {
-        Sexp data = Reader_ReadAtom(reader, alloc);
+        Sexp data = Reader_ReadAtom(reader, env);
         Reader_pushLine(reader, data);
 
         Reader_SkipAllWhitespace(reader);
     }
 }
 
-void Reader_run(Reader* reader, Environment* alloc) {
-    Reader_ReadTopLevel(reader, alloc);
+void Reader_run(Reader* reader, Environment* env) {
+    Reader_ReadTopLevel(reader, env);
 }
