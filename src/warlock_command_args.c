@@ -14,7 +14,7 @@ void ParseArguments(int argc, char** argv, Argument validArgs[],
         return;
     }
 
-    if (strcmp(*argv, "help")) {
+    if (strcmp(*argv, "help") == 0) {
         for (int i = 0; i < validArgsLen; i++) {
             Argument arg = validArgs[i];
             printf("%.*s :: %.*s\n", arg.name.len, arg.name.raw, arg.desc.len,

@@ -23,7 +23,8 @@ Sexp Sexp_Less(Environment *env, Sexp sexp);
 Sexp Sexp_And(Environment *env, Sexp sexp);
 Sexp Sexp_Or(Environment *env, Sexp sexp);
 
-Sexp Sexp_Println(Environment *env, Sexp sexp);
+Sexp Sexp_Println(Environment* env, Sexp sexp);
+Sexp Sexp_AsString(Environment* env, Sexp sexp);
 
 Sexp Sexp_First(Environment *env, Sexp sexp);
 Sexp Sexp_Rest(Environment *env, Sexp sexp);

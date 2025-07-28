@@ -3,7 +3,6 @@
 
 #include "warlock_arena.h"
 #include "warlock_common.h"
-#include "warlock_string.h"
 
 typedef struct Atom* Sexp;
 typedef struct Environment Environment;
@@ -15,7 +14,7 @@ typedef struct Fn {
 
 typedef Sexp (*IntrinsicFn)(Environment* env, Sexp args);
 typedef struct Intrinsic {
-    const char* name;
+    char* name;
     IntrinsicFn fn;
     i64 argc;
     bool eval_all;
@@ -60,9 +59,9 @@ typedef struct Atom {
     union {
         f64 ATOM_NUMBER;
         bool ATOM_BOOLEAN;
-        String ATOM_STRING;
-        String ATOM_SYMBOL;
-        String ATOM_KEYWORD;
+        char* ATOM_STRING;
+        char* ATOM_SYMBOL;
+        char* ATOM_KEYWORD;
         Fn ATOM_FN;
         Cons ATOM_CONS;
         List ATOM_LIST;
@@ -72,9 +71,11 @@ typedef struct Atom {
     } as;
 } Atom;
 
+void Atom_free(Atom* atom);
+
 typedef struct Local {
     u64 scope;
-    String name;
+    char* name;
     Sexp sexp;
 } Local;
 
@@ -95,10 +96,9 @@ Sexp Environment_alloc(Environment* env, Atom atom);
 void Environment_incScope(Environment* env);
 void Environment_decScope(Environment* env);
 
-void Environment_setLocal(Environment* env, String name, Sexp sexp);
-Sexp Environment_getLocal(Environment* env, String name);
+void Environment_setLocal(Environment* env, char* name, Sexp sexp);
+Sexp Environment_getLocal(Environment* env, char* name);
 
-String Environment_toString(Environment* env, Sexp node);
 void Environment_print(Environment* env, Sexp sexp);
 
 bool Environment_ConsTerminated(Environment* env, Sexp sexp);
@@ -137,9 +137,9 @@ u64 Environment_ConsLen(Environment* env, Sexp sexp);
     do {                                                                       \
         Sexp sexp =                                                            \
             ATOM_MAKE_S(env, ATOM_INTRINSIC, name, &fn, argc, eval_all);       \
-        Environment_setLocal(env, STR(name), sexp);                            \
+        Environment_setLocal(env, name, sexp);                            \
     } while (0);
 
-#define GLOBAL(env, name, value) Environment_setLocal(env, STR(name), value)
+#define GLOBAL(env, name, value) Environment_setLocal(env, name, value)
 
 #endif // WARLOCK_ATOM_H

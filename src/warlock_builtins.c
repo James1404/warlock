@@ -1,11 +1,14 @@
 #include "warlock_builtins.h"
 #include "warlock.h"
 #include "warlock_atom.h"
+#include "warlock_common.h"
 #include "warlock_error.h"
 #include "warlock_eval.h"
-#include "warlock_string.h"
 
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define EXPECTED_TYPE(sexp, expected)                                          \
     if (ATOM_TY(sexp) != expected) {                                           \
@@ -17,7 +20,7 @@ Sexp Sexp_Def(Environment* env, Sexp sexp) {
     Sexp symbol = Sexp_First(env, sexp);
 
     if (ATOM_TY(symbol) == ATOM_SYMBOL) {
-        String name = String_copy(ATOM_VALUE(symbol, ATOM_SYMBOL));
+        char* name = copy_string(ATOM_VALUE(symbol, ATOM_SYMBOL));
 
         sexp = Sexp_Rest(env, sexp);
 
@@ -57,7 +60,7 @@ Sexp Sexp_PrintEnv(Environment* env, Sexp sexp) {
     for (i32 i = env->localsLen - 1; i >= 0; i--) {
         Local local = env->locals[i];
 
-        printf("%.*s :: ", local.name.len, local.name.raw);
+        printf("%s :: ", local.name);
         Environment_print(env, local.sexp);
         printf("\n");
     }
@@ -156,16 +159,16 @@ Sexp Sexp_Equal(Environment* env, Sexp sexp) {
         result = ATOM_VALUE(lhs, ATOM_BOOLEAN) == ATOM_VALUE(rhs, ATOM_BOOLEAN);
         break;
     case ATOM_STRING:
-        result =
-            String_cmp(ATOM_VALUE(lhs, ATOM_STRING), ATOM_VALUE(rhs, ATOM_STRING));
+        result = string_equal(ATOM_VALUE(lhs, ATOM_STRING),
+                              ATOM_VALUE(rhs, ATOM_STRING));
         break;
     case ATOM_SYMBOL:
-        result =
-            String_cmp(ATOM_VALUE(lhs, ATOM_SYMBOL), ATOM_VALUE(rhs, ATOM_SYMBOL));
+        result = string_equal(ATOM_VALUE(lhs, ATOM_SYMBOL),
+                              ATOM_VALUE(rhs, ATOM_SYMBOL));
         break;
     case ATOM_KEYWORD:
-        result = String_cmp(ATOM_VALUE(lhs, ATOM_KEYWORD),
-                         ATOM_VALUE(rhs, ATOM_KEYWORD));
+        result = string_equal(ATOM_VALUE(lhs, ATOM_KEYWORD),
+                              ATOM_VALUE(rhs, ATOM_KEYWORD));
         break;
     default:
         break;
@@ -271,16 +274,13 @@ static void Println_print(Environment* env, Sexp sexp) {
         printf("%s", v ? "#t" : "#f");
     } break;
     case ATOM_STRING: {
-        String v = ATOM_VALUE(sexp, ATOM_STRING);
-        printf("%.*s", v.len, v.raw);
+        printf("%s", ATOM_VALUE(sexp, ATOM_STRING));
     } break;
     case ATOM_SYMBOL: {
-        String v = ATOM_VALUE(sexp, ATOM_SYMBOL);
-        printf("%.*s", v.len, v.raw);
+        printf("%s", ATOM_VALUE(sexp, ATOM_STRING));
     } break;
     case ATOM_KEYWORD: {
-        String v = ATOM_VALUE(sexp, ATOM_KEYWORD);
-        printf(":%.*s", v.len, v.raw);
+        printf(":%s", ATOM_VALUE(sexp, ATOM_KEYWORD));
     } break;
     case ATOM_FN: {
         Fn fn = ATOM_VALUE(sexp, ATOM_FN);
@@ -362,6 +362,95 @@ Sexp Sexp_Println(Environment* env, Sexp sexp) {
     printf("\n");
 
     return ATOM_MAKE_NIL(env);
+}
+
+char* AsString(Environment* env, Sexp sexp) {
+    char* str = NULL;
+
+    switch (ATOM_TY(sexp)) {
+    case ATOM_NUMBER: {
+        str = format_string("%Lf", ATOM_VALUE(sexp, ATOM_NUMBER));
+    } break;
+    case ATOM_BOOLEAN: {
+        bool v = ATOM_VALUE(sexp, ATOM_NUMBER);
+        str = format_string("%s", v ? "#t" : "#f");
+    } break;
+    case ATOM_STRING: {
+        str = format_string("\"%s\"", ATOM_VALUE(sexp, ATOM_STRING));
+    } break;
+    case ATOM_SYMBOL: {
+        str = format_string("%s", ATOM_VALUE(sexp, ATOM_SYMBOL));
+    } break;
+    case ATOM_KEYWORD: {
+        str = format_string(":%s", ATOM_VALUE(sexp, ATOM_KEYWORD));
+    } break;
+    case ATOM_FN: {
+        Fn fn = ATOM_VALUE(sexp, ATOM_FN);
+
+        str = format_string("(fn ");
+
+        Sexp_AsString(env, fn.args);
+
+        printf(" -> ");
+
+        Environment_print(env, fn.body);
+
+        printf(")");
+    } break;
+    case ATOM_INTRINSIC: {
+        Intrinsic intrinsic = ATOM_VALUE(sexp, ATOM_INTRINSIC);
+        printf("#intrinsic %s, argc: %li", intrinsic.name, intrinsic.argc);
+    } break;
+    case ATOM_FFI: {
+        printf("#ffi");
+    } break;
+    case ATOM_CONS: {
+        printf("(");
+
+        Sexp current = sexp;
+
+        while (ATOM_TY(current) != ATOM_NIL) {
+            Sexp head = Sexp_First(env, current);
+
+            Environment_print(env, head);
+
+            if (ATOM_TY(current) == ATOM_CONS &&
+                ATOM_VALUE(current, ATOM_CONS).next->ty != ATOM_NIL) {
+                printf(" ");
+            }
+
+            current = Sexp_Rest(env, current);
+        }
+
+        printf(")");
+    } break;
+    case ATOM_LIST: {
+        List list = ATOM_VALUE(sexp, ATOM_LIST);
+
+        printf("(");
+
+        for (i32 i = 0; i < list.len; i++) {
+            Sexp value = list.data[i];
+            Environment_print(env, value);
+        }
+
+        printf(")");
+    } break;
+
+    case ATOM_QUOTE: {
+        printf("'");
+        Environment_print(env, ATOM_VALUE(sexp, ATOM_QUOTE));
+    } break;
+    case ATOM_NIL: {
+        str = format_string("nil");
+    } break;
+    }
+
+    return str;
+}
+
+Sexp Sexp_AsString(Environment* env, Sexp sexp) {
+    return ATOM_MAKE_V(env, ATOM_STRING, AsString(env, sexp));
 }
 
 Sexp Sexp_First(Environment* env, Sexp sexp) {

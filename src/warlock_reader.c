@@ -2,15 +2,15 @@
 
 #include "warlock_atom.h"
 #include "warlock_builtins.h"
+#include "warlock_common.h"
 #include "warlock_error.h"
-#include "warlock_string.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 static bool Reader_eof(Reader* reader) {
-    return !(reader->position < reader->src.len);
+    return reader->position >= reader->src_len;
 }
 
 static char Reader_current(Reader* reader) {
@@ -18,7 +18,7 @@ static char Reader_current(Reader* reader) {
         return '\0';
     }
 
-    return String_idx(reader->src, reader->position);
+    return reader->src[reader->position];
 }
 
 static void Reader_advance(Reader* reader) {
@@ -71,9 +71,10 @@ static bool isSymbolCharStart(char c) {
 
 static bool isSymbolChar(char c) { return isSymbolCharStart(c) || isNumber(c); }
 
-Reader Reader_make(String src) {
+Reader Reader_make(char* src) {
     return (Reader){
         .src = src,
+        .src_len = strlen(src),
         .start = 0,
         .position = 0,
         .line = 0,
@@ -144,7 +145,7 @@ static Sexp Reader_ReadSymbol(Reader* reader, Environment* env) {
             c = Reader_current(reader);
         }
 
-        String text = String_substr(reader->src, reader->start,
+        char* text = string_substr(reader->src, reader->start,
                                  reader->position - reader->start);
 
         return ATOM_MAKE_V(env, ATOM_SYMBOL, text);
@@ -187,7 +188,8 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* env) {
 
         Reader_advance(reader);
 
-        String text = String_substr(reader->src, strStart, strLength);
+        char* text = string_substr(reader->src, strStart, strLength);
+
         return ATOM_MAKE_V(env, ATOM_STRING, text);
     }
 
@@ -197,10 +199,10 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* env) {
             c = Reader_current(reader);
         }
 
-        String text = String_substr(reader->src, reader->start,
+        char* text = string_substr(reader->src, reader->start,
                                  reader->position - reader->start);
 
-        return ATOM_MAKE_V(env, ATOM_NUMBER, strtod(text.raw, NULL));
+        return ATOM_MAKE_V(env, ATOM_NUMBER, strtod(text, NULL));
     }
 
     if (c == '(') {

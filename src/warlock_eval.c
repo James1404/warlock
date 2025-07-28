@@ -4,17 +4,6 @@
 #include "warlock_error.h"
 #include "warlock_string.h"
 
-/* typedef struct { */
-/*     const char* name; */
-/*     Sexp (*fn)(Environment*, Sexp); */
-/* } Builtin; */
-
-/* static Builtin builtins[] = { */
-/*     {"fn", &Eval_Fn}, */
-/*     {"def", &Eval_Def}, */
-/*     {"quote", &Eval_Quote}, */
-/* }; */
-
 Sexp Eval_run(Environment* env, Sexp sexp) { return Eval_Atom(env, sexp); }
 
 Sexp Eval_Atom(Environment* env, Sexp sexp) {
@@ -97,8 +86,7 @@ Sexp Eval_Cons(Environment* env, Sexp sexp) {
             Sexp arg = Sexp_First(env, currentPassedArg);
             Sexp fnArg = Sexp_First(env, currentFnArg);
 
-            String name = ATOM_VALUE(fnArg, ATOM_SYMBOL);
-            Environment_setLocal(env, name, arg);
+            Environment_setLocal(env, ATOM_VALUE(fnArg, ATOM_SYMBOL), arg);
 
             currentPassedArg = Sexp_Rest(env, currentPassedArg);
             currentFnArg = Sexp_Rest(env, currentFnArg);

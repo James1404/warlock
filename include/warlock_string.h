@@ -26,11 +26,6 @@ String String_substr(String str, i32 start, i32 len);
 String String_copy(String str);
 String String_copy_null(String str);
 
-typedef struct StringView {
-    char* raw;
-    i32 len;
-} StringView;
-
-StringView StringView_make(const char* str);
+String String_concat(String lhs, String rhs);
 
 #endif // WARLOCK_STRING_H

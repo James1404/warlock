@@ -43,6 +43,52 @@ void List_push(List* list, Sexp sexp) {
 
 Sexp List_pop(List* list) { return list->data[list->len--]; }
 
+void Atom_free(Atom* atom) {
+    switch (atom->ty) {
+    case ATOM_STRING:
+        free(ATOM_VALUE(atom, ATOM_STRING));
+        break;
+    case ATOM_SYMBOL:
+        free(ATOM_VALUE(atom, ATOM_STRING));
+        break;
+    case ATOM_KEYWORD:
+        free(ATOM_VALUE(atom, ATOM_STRING));
+        break;
+    case ATOM_FN: {
+        Fn fn = ATOM_VALUE(atom, ATOM_FN);
+
+        Atom_free(fn.args);
+        Atom_free(fn.body);
+    } break;
+    case ATOM_INTRINSIC: {
+        Intrinsic intrinsic = ATOM_VALUE(atom, ATOM_INTRINSIC);
+
+        free(intrinsic.name);
+    } break;
+    case ATOM_FFI:
+        break;
+    case ATOM_CONS: {
+        Cons cons = ATOM_VALUE(atom, ATOM_CONS);
+        Atom_free(cons.data);
+        Atom_free(cons.next);
+    } break;
+    case ATOM_LIST: {
+        List* list = &ATOM_VALUE(atom, ATOM_LIST);
+        for (usize i = 0; i < list->len; i++) {
+            Atom_free(list->data[i]);
+        }
+        List_free(list);
+    } break;
+    case ATOM_QUOTE:
+        Atom_free(ATOM_VALUE(atom, ATOM_QUOTE));
+        break;
+    case ATOM_NUMBER:
+    case ATOM_BOOLEAN:
+    case ATOM_NIL:
+        break;
+    }
+}
+
 Environment Environment_make(void) {
     Environment result = {
         .arena = Arena_make(),
@@ -75,7 +121,7 @@ void Environment_decScope(Environment* env) {
     }
 }
 
-void Environment_setLocal(Environment* env, String name, Sexp sexp) {
+void Environment_setLocal(Environment* env, char* name, Sexp sexp) {
     if (!env->locals) {
         env->localsLen = 0;
         env->localsAllocated = 8;
@@ -96,49 +142,17 @@ void Environment_setLocal(Environment* env, String name, Sexp sexp) {
     };
 }
 
-Sexp Environment_getLocal(Environment* env, String name) {
+Sexp Environment_getLocal(Environment* env, char* name) {
     for (i64 i = env->localsLen - 1; i >= 0; i--) {
         Local entry = env->locals[i];
 
-        if (String_cmp(entry.name, name)) {
+        if (string_equal(entry.name, name)) {
             return entry.sexp;
         }
     }
 
-    Warlock_error("Could not find symbol '%.*s' in environment", name.len,
-                  name.raw);
+    Warlock_error("Could not find symbol '%s' in environment", name);
     return ATOM_MAKE(env, ATOM_NIL);
-}
-
-String Environment_toString(Environment* env, Sexp node) {
-    switch (ATOM_TY(node)) {
-    case ATOM_NUMBER:
-        return STR("NUMBER");
-    case ATOM_BOOLEAN:
-        return STR("BOOLEAN");
-    case ATOM_STRING:
-        return STR("STRING");
-    case ATOM_SYMBOL:
-        return STR("SYMBOL");
-    case ATOM_KEYWORD:
-        return STR("KEYWORD");
-    case ATOM_FN:
-        return STR("FN");
-    case ATOM_INTRINSIC:
-        return STR("INTRINSIC");
-    case ATOM_FFI:
-        return STR("FFI");
-    case ATOM_CONS:
-        return STR("CONS");
-    case ATOM_LIST:
-        return STR("LIST");
-    case ATOM_QUOTE:
-        return STR("QUOTE");
-    case ATOM_NIL:
-        return STR("NIL");
-    }
-
-    return STR("Invalid String");
 }
 
 void Environment_print(Environment* env, Sexp sexp) {
@@ -151,16 +165,13 @@ void Environment_print(Environment* env, Sexp sexp) {
         printf("%s", v ? "#t" : "#f");
     } break;
     case ATOM_STRING: {
-        String v = ATOM_VALUE(sexp, ATOM_STRING);
-        printf("\"%.*s\"", v.len, v.raw);
+        printf("\"%s\"", ATOM_VALUE(sexp, ATOM_STRING));
     } break;
     case ATOM_SYMBOL: {
-        String v = ATOM_VALUE(sexp, ATOM_SYMBOL);
-        printf("%.*s", v.len, v.raw);
+        printf("%s", ATOM_VALUE(sexp, ATOM_SYMBOL));
     } break;
     case ATOM_KEYWORD: {
-        String v = ATOM_VALUE(sexp, ATOM_KEYWORD);
-        printf(":%.*s", v.len, v.raw);
+        printf(":%s", ATOM_VALUE(sexp, ATOM_KEYWORD));
     } break;
     case ATOM_FN: {
         Fn fn = ATOM_VALUE(sexp, ATOM_FN);

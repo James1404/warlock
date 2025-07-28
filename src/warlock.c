@@ -37,6 +37,7 @@ void Warlock_builtin(Environment* env) {
     GLOBAL(env, "nil", ATOM_MAKE(env, ATOM_NIL));
 
     INTRINSIC(env, "println", Sexp_Println, -1, true);
+    INTRINSIC(env, "as_string", Sexp_AsString, 0, true);
 
     INTRINSIC(env, "import", Sexp_Import, 1, true);
 
@@ -48,7 +49,7 @@ void Warlock_builtin(Environment* env) {
     INTRINSIC(env, "if", Sexp_If, 3, true);
 }
 
-Sexp Warlock_run(Environment* env, String src) {
+Sexp Warlock_run(Environment* env, char* src) {
     Reader reader = Reader_make(src);
 
     Reader_run(&reader, env);
@@ -69,15 +70,12 @@ Sexp Warlock_run(Environment* env, String src) {
     return result;
 }
 
-Sexp Warlock_run_file(Environment* env, String path) {
-    String nullterminated = String_copy_null(path);
-    
-    FILE* file = fopen(nullterminated.raw, "r");
+Sexp Warlock_run_file(Environment* env, char* path) {
+    FILE* file = fopen(path, "r");
 
     if(!file) {
-        Warlock_error("Could not find file '%.*s'", path.len, path.raw);
+        Warlock_error("Could not find file '%s'", path);
         fclose(file);
-        String_free(&nullterminated);
         return ATOM_MAKE_NIL(env);
     }
 
@@ -88,17 +86,16 @@ Sexp Warlock_run_file(Environment* env, String path) {
     char* buffer = malloc(len);
 
     if(fread(buffer, 1, len, file) != len) {
-        Warlock_error("Failed to read file '%.*s'", path.len, path.raw);
+        Warlock_error("Failed to read file '%s'", path);
         fclose(file);
         return ATOM_MAKE_NIL(env);
     }
     
     fclose(file);
 
-    Sexp result = Warlock_run(env, (String) { buffer, len });
+    Sexp result = Warlock_run(env, buffer);
 
     free(buffer);
-    String_free(&nullterminated);
 
     return result;
 }

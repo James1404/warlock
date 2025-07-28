@@ -29,7 +29,7 @@ void replParser(int argc, char** argv) {
         char* input = readline("warlock> ");
         add_history(input);
 
-        Sexp result = Warlock_run(&environment, (String){input, strlen(input)});
+        Sexp result = Warlock_run(&environment, input);
 
         Environment_print(&environment, result);
         printf("\n");
@@ -71,8 +71,7 @@ void testParser(int argc, char** argv) {
     }
 
     while (n--) {
-        String str = STR(namelist[n]->d_name);
-        Warlock_run_file(&environment, str);
+        Warlock_run_file(&environment, namelist[n]->d_name);
         free(namelist[n]);
     }
 
@@ -81,8 +80,7 @@ void testParser(int argc, char** argv) {
 }
 
 void runParser(int argc, char** argv) {
-    String str = STR(*argv);
-    Warlock_run_file(&environment, str);
+    Warlock_run_file(&environment, *argv);
 }
 
 int main(int argc, char** argv) {
