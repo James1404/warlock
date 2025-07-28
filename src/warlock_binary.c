@@ -10,8 +10,6 @@
 
 #include <editline.h>
 
-#define REPL_LEN 256
-
 static bool running = true;
 static Environment environment = {0};
 
