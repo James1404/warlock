@@ -79,8 +79,15 @@ typedef struct Local {
     Sexp sexp;
 } Local;
 
+/* typedef struct SexpStorage { */
+/*     Atom* data; */
+/*     usize len, allocated; */
+/* } SexpStorage; */
+
 struct Environment {
     Arena arena;
+
+    /* SexpStorage storage; */
 
     u64 scope;
 
@@ -91,6 +98,7 @@ struct Environment {
 Environment Environment_make(void);
 void Environment_free(Environment* env);
 
+void* Environment_malloc(Environment* env, usize len);
 Sexp Environment_alloc(Environment* env, Atom atom);
 
 void Environment_incScope(Environment* env);
@@ -103,6 +111,11 @@ void Environment_print(Environment* env, Sexp sexp);
 
 bool Environment_ConsTerminated(Environment* env, Sexp sexp);
 u64 Environment_ConsLen(Environment* env, Sexp sexp);
+
+char* Environment_format_string(Environment* env, const char* fmt, ...);
+char* Environment_copy_string(Environment* env, char* str);
+bool Environment_string_equal(Environment* env, char* lhs, char* rhs);
+char* Environment_string_substr(Environment* env, char* lhs, usize start, usize len);
 
 #define ATOM_SET(sexp, ty)                                                     \
     *(sexp) = (Atom) {                                                         \

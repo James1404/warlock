@@ -2,7 +2,6 @@
 #include "warlock_atom.h"
 #include "warlock_builtins.h"
 #include "warlock_error.h"
-#include "warlock_string.h"
 
 Sexp Eval_run(Environment* env, Sexp sexp) { return Eval_Atom(env, sexp); }
 

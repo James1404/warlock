@@ -36,9 +36,4 @@ typedef uintptr_t usize;
 
 #define ARRAY_LEN(array) (sizeof(array) / sizeof(*array))
 
-char* format_string(const char* fmt, ...);
-char* copy_string(char* str);
-bool string_equal(char* lhs, char* rhs);
-char* string_substr(char* lhs, usize start, usize len);
-
 #endif//WARLOCK_COMMON_H

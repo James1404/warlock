@@ -3,10 +3,11 @@
 #include "warlock_arena.h"
 #include "warlock_builtins.h"
 #include "warlock_error.h"
-#include "warlock_string.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define PRINT_WHERE() printf("AT := %s\n", __func__)
 
@@ -89,9 +90,46 @@ void Atom_free(Atom* atom) {
     }
 }
 
+/* static SexpStorage SexpStorage_make(void) { */
+/*     return (SexpStorage){ */
+/*         .data = NULL, */
+/*         .len = 0, */
+/*         .allocated = 0, */
+/*     }; */
+/* } */
+
+/* static void SexpStorage_free(SexpStorage* storage) { */
+/*     for (usize i = 0; i < storage->len; i++) { */
+/*         Atom_free(&storage->data[i]); */
+/*     } */
+
+/*     free(storage->data); */
+/* } */
+
+/* static Sexp SexpStorage_push(SexpStorage* storage, Atom atom) { */
+/*     if (!storage->data) { */
+/*         storage->allocated = 8; */
+/*         storage->len = 0; */
+/*         storage->data = malloc(sizeof(Atom) * storage->allocated); */
+/*     } */
+
+/*     if (storage->len == storage->allocated) { */
+/*         storage->allocated *= 2; */
+/*         storage->data = realloc(storage->data, sizeof(Atom) *
+ * storage->allocated); */
+/*     } */
+
+/*     Sexp sexp = &storage->data[storage->len++]; */
+/*     *sexp = atom; */
+
+/*     return sexp; */
+/* } */
+
 Environment Environment_make(void) {
     Environment result = {
         .arena = Arena_make(),
+
+        /* .storage = SexpStorage_make(), */
 
         .localsLen = 0,
         .localsAllocated = 8,
@@ -103,7 +141,12 @@ Environment Environment_make(void) {
 
 void Environment_free(Environment* env) {
     Arena_free(&env->arena);
+    /* SexpStorage_free(&env->storage); */
     free(env->locals);
+}
+
+void* Environment_malloc(Environment* env, usize len) {
+    return Arena_malloc(&env->arena, len);
 }
 
 Sexp Environment_alloc(Environment* env, Atom atom) {
@@ -146,7 +189,7 @@ Sexp Environment_getLocal(Environment* env, char* name) {
     for (i64 i = env->localsLen - 1; i >= 0; i--) {
         Local entry = env->locals[i];
 
-        if (string_equal(entry.name, name)) {
+        if (Environment_string_equal(env, entry.name, name)) {
             return entry.sexp;
         }
     }
@@ -253,4 +296,39 @@ u64 Environment_ConsLen(Environment* env, Sexp sexp) {
     }
 
     return result;
+}
+
+char* Environment_format_string(Environment* env, const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    usize len = vsnprintf(NULL, 0, fmt, args);
+    char* buf = Environment_malloc(env, len + 1);
+    vsnprintf(buf, len + 1, fmt, args);
+
+    va_end(args);
+
+    return buf;
+}
+
+char* Environment_copy_string(Environment* env, char* str) {
+    usize len = strlen(str);
+    char* buf = Environment_malloc(env, len + 1);
+    strcpy(buf, str);
+    buf[len] = '\0';
+    return buf;
+}
+
+bool Environment_string_equal(Environment* env, char* lhs, char* rhs) {
+    return strcmp(lhs, rhs) == 0;
+}
+
+char* Environment_string_substr(Environment* env, char* lhs, usize start,
+                                usize len) {
+    char* buf = Environment_malloc(env, len + 1);
+
+    strncpy(buf, lhs + start, len);
+    buf[len] = '\0';
+
+    return buf;
 }

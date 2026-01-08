@@ -1,7 +1,7 @@
 #include "warlock_command_args.h"
-#include "warlock_string.h"
 
 #include <stdio.h>
+#include <string.h>
 
 void ParseArguments(int argc, char** argv, Argument validArgs[],
                     int validArgsLen) {
@@ -17,8 +17,7 @@ void ParseArguments(int argc, char** argv, Argument validArgs[],
     if (strcmp(*argv, "help") == 0) {
         for (int i = 0; i < validArgsLen; i++) {
             Argument arg = validArgs[i];
-            printf("%.*s :: %.*s\n", arg.name.len, arg.name.raw, arg.desc.len,
-                   arg.desc.raw);
+            printf("%s :: %s\n", arg.name, arg.desc);
         }
 
         return;
@@ -27,7 +26,7 @@ void ParseArguments(int argc, char** argv, Argument validArgs[],
     for (int i = 0; i < validArgsLen; i++) {
         Argument* arg = validArgs + i;
 
-        if (String_cmp_with_raw(arg->name, *argv)) {
+        if (strcmp(arg->name, *argv) == 0) {
             arg->parser(argc - 1, argv + 1);
             break;
         }

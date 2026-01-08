@@ -3,11 +3,9 @@
 
 #include "warlock_common.h"
 
-#define ARENA_PAGE_LEN 4096
-
 typedef struct ArenaPage {
     u8* data;
-    u64 used;
+    u64 used, allocated;
 
     struct ArenaPage* next;
 } ArenaPage;

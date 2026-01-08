@@ -22,8 +22,9 @@ static char Reader_current(Reader* reader) {
 }
 
 static void Reader_advance(Reader* reader) {
-    if (Reader_eof(reader))
+    if (Reader_eof(reader)) {
         return;
+    }
 
     reader->position++;
     reader->line_pos++;
@@ -72,9 +73,10 @@ static bool isSymbolCharStart(char c) {
 static bool isSymbolChar(char c) { return isSymbolCharStart(c) || isNumber(c); }
 
 Reader Reader_make(char* src) {
+    u64 len = strlen(src);
     return (Reader){
         .src = src,
-        .src_len = strlen(src),
+        .src_len = len,
         .start = 0,
         .position = 0,
         .line = 0,
@@ -83,11 +85,12 @@ Reader Reader_make(char* src) {
 
 void Reader_free(Reader* reader) {}
 
-static void Reader_pushLine(Reader* reader, Sexp sexp) {
+static void Reader_pushLine(Reader* reader, Environment* env, Sexp sexp) {
     if (!reader->lines) {
         reader->linesAllocated = 8;
         reader->linesLen = 0;
-        reader->lines = malloc(sizeof(Sexp) * reader->linesAllocated);
+        reader->lines =
+            Environment_malloc(env, sizeof(Sexp) * reader->linesAllocated);
     }
 
     if (reader->linesLen >= reader->linesAllocated) {
@@ -145,8 +148,8 @@ static Sexp Reader_ReadSymbol(Reader* reader, Environment* env) {
             c = Reader_current(reader);
         }
 
-        char* text = string_substr(reader->src, reader->start,
-                                 reader->position - reader->start);
+        char* text = Environment_string_substr(
+            env, reader->src, reader->start, reader->position - reader->start);
 
         return ATOM_MAKE_V(env, ATOM_SYMBOL, text);
     }
@@ -188,7 +191,8 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* env) {
 
         Reader_advance(reader);
 
-        char* text = string_substr(reader->src, strStart, strLength);
+        char* text =
+            Environment_string_substr(env, reader->src, strStart, strLength);
 
         return ATOM_MAKE_V(env, ATOM_STRING, text);
     }
@@ -199,8 +203,8 @@ static Sexp Reader_ReadAtom(Reader* reader, Environment* env) {
             c = Reader_current(reader);
         }
 
-        char* text = string_substr(reader->src, reader->start,
-                                 reader->position - reader->start);
+        char* text = Environment_string_substr(
+            env, reader->src, reader->start, reader->position - reader->start);
 
         return ATOM_MAKE_V(env, ATOM_NUMBER, strtod(text, NULL));
     }
@@ -250,7 +254,7 @@ static void Reader_ReadTopLevel(Reader* reader, Environment* env) {
 
     while (!Reader_eof(reader)) {
         Sexp data = Reader_ReadAtom(reader, env);
-        Reader_pushLine(reader, data);
+        Reader_pushLine(reader, env, data);
 
         Reader_SkipAllWhitespace(reader);
     }

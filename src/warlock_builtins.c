@@ -20,7 +20,8 @@ Sexp Sexp_Def(Environment* env, Sexp sexp) {
     Sexp symbol = Sexp_First(env, sexp);
 
     if (ATOM_TY(symbol) == ATOM_SYMBOL) {
-        char* name = copy_string(ATOM_VALUE(symbol, ATOM_SYMBOL));
+        char* name =
+            Environment_copy_string(env, ATOM_VALUE(symbol, ATOM_SYMBOL));
 
         sexp = Sexp_Rest(env, sexp);
 
@@ -159,16 +160,16 @@ Sexp Sexp_Equal(Environment* env, Sexp sexp) {
         result = ATOM_VALUE(lhs, ATOM_BOOLEAN) == ATOM_VALUE(rhs, ATOM_BOOLEAN);
         break;
     case ATOM_STRING:
-        result = string_equal(ATOM_VALUE(lhs, ATOM_STRING),
-                              ATOM_VALUE(rhs, ATOM_STRING));
+        result = Environment_string_equal(env, ATOM_VALUE(lhs, ATOM_STRING),
+                                          ATOM_VALUE(rhs, ATOM_STRING));
         break;
     case ATOM_SYMBOL:
-        result = string_equal(ATOM_VALUE(lhs, ATOM_SYMBOL),
-                              ATOM_VALUE(rhs, ATOM_SYMBOL));
+        result = Environment_string_equal(env, ATOM_VALUE(lhs, ATOM_SYMBOL),
+                                          ATOM_VALUE(rhs, ATOM_SYMBOL));
         break;
     case ATOM_KEYWORD:
-        result = string_equal(ATOM_VALUE(lhs, ATOM_KEYWORD),
-                              ATOM_VALUE(rhs, ATOM_KEYWORD));
+        result = Environment_string_equal(env, ATOM_VALUE(lhs, ATOM_KEYWORD),
+                                          ATOM_VALUE(rhs, ATOM_KEYWORD));
         break;
     default:
         break;
@@ -369,25 +370,29 @@ char* AsString(Environment* env, Sexp sexp) {
 
     switch (ATOM_TY(sexp)) {
     case ATOM_NUMBER: {
-        str = format_string("%Lf", ATOM_VALUE(sexp, ATOM_NUMBER));
+        str = Environment_format_string(env, "%Lf",
+                                        ATOM_VALUE(sexp, ATOM_NUMBER));
     } break;
     case ATOM_BOOLEAN: {
         bool v = ATOM_VALUE(sexp, ATOM_NUMBER);
-        str = format_string("%s", v ? "#t" : "#f");
+        str = Environment_format_string(env, "%s", v ? "#t" : "#f");
     } break;
     case ATOM_STRING: {
-        str = format_string("\"%s\"", ATOM_VALUE(sexp, ATOM_STRING));
+        str = Environment_format_string(env, "\"%s\"",
+                                        ATOM_VALUE(sexp, ATOM_STRING));
     } break;
     case ATOM_SYMBOL: {
-        str = format_string("%s", ATOM_VALUE(sexp, ATOM_SYMBOL));
+        str =
+            Environment_format_string(env, "%s", ATOM_VALUE(sexp, ATOM_SYMBOL));
     } break;
     case ATOM_KEYWORD: {
-        str = format_string(":%s", ATOM_VALUE(sexp, ATOM_KEYWORD));
+        str = Environment_format_string(env, ":%s",
+                                        ATOM_VALUE(sexp, ATOM_KEYWORD));
     } break;
     case ATOM_FN: {
         Fn fn = ATOM_VALUE(sexp, ATOM_FN);
 
-        str = format_string("(fn ");
+        str = Environment_format_string(env, "(fn ");
 
         Sexp_AsString(env, fn.args);
 
@@ -442,7 +447,7 @@ char* AsString(Environment* env, Sexp sexp) {
         Environment_print(env, ATOM_VALUE(sexp, ATOM_QUOTE));
     } break;
     case ATOM_NIL: {
-        str = format_string("nil");
+        str = Environment_format_string(env, "nil");
     } break;
     }
 

@@ -1,8 +1,8 @@
 #include "warlock.h"
+#include "warlock_allocator.h"
 #include "warlock_atom.h"
 #include "warlock_command_args.h"
 #include "warlock_error.h"
-#include "warlock_string.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,6 +84,8 @@ void runParser(int argc, char** argv) {
 }
 
 int main(int argc, char** argv) {
+    Warlock_alloc_init();
+
     environment = Environment_make();
 
     Warlock_builtin(&environment);
@@ -101,4 +103,6 @@ int main(int argc, char** argv) {
     ParseArguments(argc, argv, validArguments, validArgumentsLen);
 
     Environment_free(&environment);
+
+    Warlock_alloc_deinit();
 }

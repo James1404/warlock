@@ -1,8 +1,6 @@
 #ifndef WARLOCK_OPCODES_H
 #define WARLOCK_OPCODES_H
 
-#include "warlock_string.h"
-
 #define FOR_OPCODES(DO)\
     DO(OP_ADD)\
     DO(OP_SUB)\
@@ -21,6 +19,6 @@ typedef enum {
 #undef DEF_ENUM
 } Opcode;
 
-String Opcode_toString(Opcode op);
+char* Opcode_toString(Opcode op);
 
 #endif//WARLOCK_OPCODES_H

@@ -6,7 +6,6 @@
 #include "warlock_eval.h"
 #include "warlock_reader.h"
 #include "warlock_builtins.h"
-#include "warlock_string.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -83,13 +82,16 @@ Sexp Warlock_run_file(Environment* env, char* path) {
     u64 len = ftell(file);
 
     fseek(file, 0, SEEK_SET);
-    char* buffer = malloc(len);
+    char* buffer = Environment_malloc(env, len + 1);
 
     if(fread(buffer, 1, len, file) != len) {
         Warlock_error("Failed to read file '%s'", path);
         fclose(file);
+        free(buffer);
         return ATOM_MAKE_NIL(env);
     }
+
+    buffer[len] = '\0';
     
     fclose(file);
 

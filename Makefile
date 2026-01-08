@@ -18,7 +18,7 @@ INCLUDE_DIRS := $(foreach dir,$(INCLUDE),-I$(dir))
 
 DEFINES = -D EXE_NAME=\"$(EXE)\"
 
-CCFLAGS = -Wall -Werror -pedantic -fsanitize=address -fsanitize-trap=all -fsanitize=undefined -g -glldb -Og -std=c99 $(DEFINES)\
+CCFLAGS = -Wall -Werror -pedantic -fsanitize=integer -fsanitize-trap=all -g -glldb -Og -std=c99 $(DEFINES)\
 		  $(INCLUDE_DIRS)\
 	      `llvm-config --cflags`\
 		  `pkg-config --cflags libeditline`
